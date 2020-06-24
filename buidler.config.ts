@@ -1,22 +1,33 @@
 import { BuidlerConfig, usePlugin } from "@nomiclabs/buidler/config";
+import * as dotenv from "dotenv";
+
+dotenv.config();
 
 usePlugin("@nomiclabs/buidler-waffle");
 usePlugin("@nomiclabs/buidler-etherscan");
 usePlugin("buidler-typechain");
 usePlugin("solidity-coverage");
+usePlugin("@nomiclabs/buidler-solhint");
 
 const { 
   INFURA_API_KEY,
-  RINKEBY_PRIVATE_KEY,
+  PRIVATE_KEY,
   ETHERSCAN_API_KEY
 } = process.env
 
 const config: BuidlerConfig = {
-  defaultNetwork: "buidlerevm",
   solc: {
     version: "0.6.8",
   },
   networks: {
+    rinkeby: {
+      url: `https://rinkeby.infura.io/v3/${INFURA_API_KEY}`,
+      accounts: [PRIVATE_KEY!]
+    },
+    mainnet: {
+      url: `https://infura.io/v3/${INFURA_API_KEY}`,
+      accounts: [PRIVATE_KEY!]
+    },
     coverage: {
       url: 'http://127.0.0.1:8555' // Coverage launches its own ganache-cli client
     }

@@ -7,5 +7,4 @@ contract DequityRedemption {
   function cashOut(uint256 amount) public pure returns (uint256) {
     return amount;
   }
-
 }

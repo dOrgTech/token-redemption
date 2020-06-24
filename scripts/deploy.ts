@@ -1,5 +1,5 @@
-  
 import { ethers } from "@nomiclabs/buidler";
+import { exec } from 'child_process'
 
 async function main() {
   const factory = await ethers.getContract("DequityRedemption");
@@ -8,13 +8,14 @@ async function main() {
   let contract = await factory.deploy();
 
   // The address the Contract WILL have once mined
-  console.log(contract.address);
+  console.log("Contract at address: " + contract.address);
 
   // The transaction that was sent to the network to deploy the Contract
-  console.log(contract.deployTransaction.hash);
-
+  console.log("Tx hash: " + contract.deployTransaction.hash);
+  
   // The contract is NOT deployed yet; we must wait until it is mined
   await contract.deployed();
+  exec(`npx buidler verify-contract --contract-name DequityRedemption --address ${contract.address}`)
 }
 
 main()
