@@ -1,0 +1,12 @@
+language: node_js
+
+node_js:
+  - 12
+
+before_script:
+  - yarn
+
+script:
+  - yarn lint
+  - yarn build
+  - yarn test
