@@ -34,6 +34,7 @@ const config: BuidlerConfig = {
   },
   etherscan: {
     // The url for the Etherscan API you want to use.
+    // Right now is for rinkeby
     url: "https://api-rinkeby.etherscan.io/api",
     // Your API key for Etherscan
     // Obtain one at https://etherscan.io/

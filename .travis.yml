@@ -4,8 +4,9 @@ node_js:
   - 12
 
 before_script:
-  - npm i
+  - yarn
 
 script:
+  - yarn lint
   - yarn build
   - yarn test

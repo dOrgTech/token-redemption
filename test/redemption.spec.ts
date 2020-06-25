@@ -21,7 +21,7 @@ describe("Redemption", () => {
   });
 
   it("Cash out returns zero (for now)", async () => {
-    let amount = 10
+    let amount = 0
     const cashedOut = await dequityRemption.cashOut(amount);
     expect(cashedOut).to.eq(amount);
   });
