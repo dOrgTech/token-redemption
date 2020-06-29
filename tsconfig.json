@@ -5,6 +5,7 @@
     "strict": true,
     "esModuleInterop": true,
     "outDir": "dist",
+    "sourceMap": true,
     "resolveJsonModule": true
   },
   "include": ["./scripts", "./test"],
