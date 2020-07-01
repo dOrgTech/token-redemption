@@ -17,7 +17,7 @@ const {
 
 const config: BuidlerConfig = {
   solc: {
-    version: "0.6.2",
+    version: "0.6.10",
   },
   networks: {
     rinkeby: {

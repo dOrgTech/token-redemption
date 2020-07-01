@@ -4,4 +4,3 @@ cache
 artifacts
 types
 coverage*
-!coverage.sh
