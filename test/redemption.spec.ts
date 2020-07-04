@@ -14,11 +14,12 @@ describe("Redemption", async () => {
   let deployer: Signer;
   let owner: Signer;
   let holder: Signer;
+  let randomAccount: Signer;
 
   beforeEach(async () => {
     let signers: Signer[] = await ethers.getSigners();
 
-    [deployer, owner, holder] = signers;
+    [deployer, owner, holder, randomAccount] = signers;
 
     dequityRedemption = (await deployContract(
       deployer as Wallet,
@@ -43,12 +44,21 @@ describe("Redemption", async () => {
         to: dequityRedemption.address,
         data,
       });
-      const currentAPR = await dequityRedemption.functions.APR();
+      const currentAPR = await dequityRedemption.functions.apr();
       expect(currentAPR).to.eq(10);
     });
 
     it("Not owner signs the tx, it should fail", async () => {
-      expect(() => dequityRedemption.setAPR(2)).to.throw;
+      await expect(dequityRedemption.setAPR(2)).to.be.revertedWith(
+        "Only the owner can call this method"
+      );
+    });
+
+    it("New apr can not be higher than 100", async () => {
+      const update = async () => await dequityRedemption.connect(owner).setAPR(101);
+      await expect(update()).to.be.revertedWith(
+        "APR can not be greater than 100"
+      );
     });
   });
 
@@ -68,5 +78,14 @@ describe("Redemption", async () => {
       );
       expect(holderBalance).to.eq("50");
     });
+
+    it("An account that is not the owner tries to mint, it should fail", async () => {
+      const randomAddress = await randomAccount.getAddress();
+      await expect(
+        dequityRedemption.mint(randomAddress, 200)
+      ).to.be.revertedWith("Only the owner can call this method");
+    });
   });
+
+  describe("Cash out", () => {});
 });
