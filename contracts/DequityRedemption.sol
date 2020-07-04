@@ -22,7 +22,7 @@ contract DequityRedemption is ERC20UpgradeSafe {
     }
 
     /// @notice Mapping to make the relationship between user and locked funds
-    mapping(address => LockedInformation) lockedFunds;
+    mapping(address => LockedInformation) public lockedFunds;
 
     /// @notice An event emitted when apr is updated
     event APRUpdate(uint8 amount);
@@ -41,15 +41,14 @@ contract DequityRedemption is ERC20UpgradeSafe {
         __ERC20_init(_name, _symbol);
         owner = _owner;
     }
+/*
+    function lock(uint _amount) external {
+        LockedInformation memory newLock = LockedInformation(_amount, now);
+        lockedFunds[msg.sender] = newLock;
+    }
 
-    // function lock(uint _amount) external {
-    //     LockedInformation memory newLock = LockedInformation(_amount, now);
-    //     lockedFunds[msg.sender] = newLock;
-    // }
-
-    // function unlock() external {
-
-    // }
+    function unlock() external { }
+*/
 
     /**
      * @dev Owner creates tokens for an account
@@ -59,10 +58,8 @@ contract DequityRedemption is ERC20UpgradeSafe {
     function mint(address dest, uint256 amount)
         external
         onlyOwner
-        returns (bool)
     {
         _mint(dest, amount);
-        return true;
     }
 
     /**
@@ -85,7 +82,7 @@ contract DequityRedemption is ERC20UpgradeSafe {
         IERC20 usdcToken = IERC20(tokenAddress);
         require(
             usdcToken.balanceOf(address(this)) < amount,
-            'Organization does not have enough funds in selected token, please try later'
+            "Not enough funds in selected token"
         );
         _burn(msg.sender, amount);
         usdcToken.transfer(msg.sender, amount);
