@@ -88,4 +88,5 @@ describe("Redemption", async () => {
   });
 
   describe("Cash out", () => {});
+  describe("Lock funds", () => {});
 });
