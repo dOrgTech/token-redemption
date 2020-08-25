@@ -1,10 +1,12 @@
+[![Build Status](https://travis-ci.org/dOrgTech/token-redemption.svg)](https://travis-ci.org/dOrgTech/token-redemption)
+[![Coverage Status](https://codecov.io/gh/dOrgTech/token-redemption/graph/badge.svg)](https://codecov.io/gh/dOrgTech/token-redemption)
 # Token Redemption
 
 > Smart contract for the dOrg Token redemption flow.
-___
+
 # Specs
 
-- `DequityRedemption` contract extends from ERC20, especifically from the [implementation](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/ERC20.sol) created by OpenZeppelin
+- `DequityRedemption` contract extends from ERC20, especifically from the [implementation](https://github.com/OpenZeppelin/openzeppelin-contracts-ethereum-package/blob/master/contracts/token/ERC20/ERC20.sol) created by OpenZeppelin
 - In order to make this contract upgradable with new functionalities, it is [`Initializable`](https://docs.openzeppelin.com/upgrades/2.7/writing-upgradeable) and in the `initialize` method the [DAO](https://alchemy.daostack.io/dao/0x15344ecdc2c4edfcb092e284d93c20f0529fd8a6) will be set as the owner.
 - In total, this contract has six (6) methods, which are:
 
@@ -21,7 +23,6 @@ ___
   - Typescript
   - Waffle
   - Ethers
-___
 
 # Build & Contribute
 
