@@ -1,6 +1,14 @@
 import "@openzeppelin/contracts-ethereum-package/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
 
+/**
+ * @dev Redeem 1 input token for 1 redmeption token
+ *
+ * Holders of the input `token` are able to call the
+ * `redeem(_redeemToken, _amount)` function, which will:
+ *   1. transfer `_amount` of the input `token` to this contract (burning)
+ *   2. transfer `_amount` of `_redeemToken` to the caller (redeeming)
+ */
 contract StableRedemption is Ownable {
 
   /// @notice Token that can be redeemed for a redemption token
