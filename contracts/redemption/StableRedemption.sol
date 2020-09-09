@@ -120,7 +120,9 @@ contract StableRedemption is Ownable {
     // Adjust the request amount of token to the redeem token's decimals
     uint256 redeemAmount = 0;
 
-    if (_redeemToken.decimals() > token.decimals()) {
+    if (_redeemToken.decimals() == token.decimals()) {
+      redeemAmount = _amount;
+    } else if (_redeemToken.decimals() > token.decimals()) {
       uint256 decimalDif = _redeemToken.decimals() - token.decimals();
       redeemAmount = _amount * (10 ** decimalDif);
     } else {
