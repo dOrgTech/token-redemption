@@ -1,7 +1,8 @@
 pragma solidity ^0.6.8;
 
-import "@openzeppelin/contracts-ethereum-package/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
+import "../lib/Ownable.sol";
+import "../lib/IERC20.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 
 /**
  * @dev Redeem 1 input token for 1 redmeption token
@@ -13,32 +14,35 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.so
  */
 contract StableRedemption is Ownable {
 
+  using SafeMath for uint256;
+  using SafeMath for uint8;
+
   /// @notice Token that can be redeemed for a redemption token
-  IERC20 inputToken;
+  IERC20 public inputToken;
 
   /// @notice Whitelisted redeemable stable tokens
-  mapping(IERC20 => bool) tokenList;
+  mapping(IERC20 => bool) public tokenList;
 
   event TokenListUpdated(
     address indexed token,
     bool listed
   );
 
-  event TokenSet(address indexed inputToken);
+  event InputTokenSet(address indexed inputToken);
 
   function initialize(
     address _owner,
     IERC20 _inputToken,
-    IERC20[] _redemptionTokens
+    IERC20[] calldata _redemptionTokens
   ) external initializer {
     __Ownable_init();
     transferOwnership(_owner);
 
-    _setToken(_inputToken);
+    _setInputToken(_inputToken);
 
     uint len = _redemptionTokens.length;
     for (uint i = 0; i < len; i++) {
-      _listToken(_redemptionTokens[i]);
+      _listRedeemToken(_redemptionTokens[i]);
     }
   }
 
@@ -72,7 +76,7 @@ contract StableRedemption is Ownable {
   * @param _redeemTokens - Redeem Token
   * @param _amounts - Amount of "input" token (not redeem tokens)
   */
-  function redeemMulti(IERC20[] _redeemTokens, uint256[] _amounts) external {
+  function redeemMulti(IERC20[] calldata _redeemTokens, uint256[] calldata _amounts) external {
     require(
       _redeemTokens.length == _amounts.length,
       "Number of tokens must match the number of amounts"
@@ -113,7 +117,7 @@ contract StableRedemption is Ownable {
       "Redeemer does not have enough tokens"
     );
     require(
-      inputToken.allowance(_redeemer, this) >= _amount,
+      inputToken.allowance(_redeemer, address(this)) >= _amount,
       "Unable to spend the redeemer's tokens on their behalf"
     );
 
@@ -123,19 +127,19 @@ contract StableRedemption is Ownable {
     if (_redeemToken.decimals() == inputToken.decimals()) {
       redeemAmount = _amount;
     } else if (_redeemToken.decimals() > inputToken.decimals()) {
-      uint256 decimalDif = _redeemToken.decimals() - inputToken.decimals();
-      redeemAmount = _amount * (10 ** decimalDif);
+      uint256 decimalDif = uint256(_redeemToken.decimals().sub(inputToken.decimals()));
+      redeemAmount = _amount.div(10 ** decimalDif);
     } else {
-      uint256 decimalDif = inputToken.decimals() - _redeemToken.decimals();
-      redeemAmount = _amount / (10 ** decimalDif);
+      uint256 decimalDif = inputToken.decimals().sub(_redeemToken.decimals());
+      redeemAmount = _amount.div(10 ** decimalDif);
     }
 
     require(
-      _redeemToken.balanceOf(this) >= redeemAmount,
+      _redeemToken.balanceOf(address(this)) >= redeemAmount,
       "Not enough tokens available for requested redemption amount"
     );
 
-    inputToken.transferFrom(_redeemer, this, _amount);
+    inputToken.transferFrom(_redeemer, address(this), _amount);
     _transferToken(_redeemToken, redeemAmount, _redeemer);
   }
 }
