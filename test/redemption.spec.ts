@@ -30,33 +30,30 @@ describe("Redemption", async () => {
       "DORG",
       await owner.getAddress()
     );
+    // Set the owner as the sender
+    dequityRedemption = dequityRedemption.connect(owner);
   });
 
   it("Initializer should set name, symbol and owner", async () => {
-    const newOwner = await dequityRedemption.functions.owner();
+    const newOwner = await dequityRedemption.owner();
     expect(newOwner).to.eq(await owner.getAddress());
   });
 
   describe("Set APR", () => {
     it("Owner signs the tx, should update the APR", async () => {
-      const data = new Interface(ABI).functions.setAPR.encode([10]);
-      await owner.sendTransaction({
-        to: dequityRedemption.address,
-        data,
-      });
-      const currentAPR = await dequityRedemption.functions.apr();
-      expect(currentAPR).to.eq(10);
+      await dequityRedemption.setAPR(10);
+      expect(await dequityRedemption.apr()).to.eq(10);
     });
 
     it("Not owner signs the tx, it should fail", async () => {
-      await expect(dequityRedemption.setAPR(2)).to.be.revertedWith(
+      const notOwnerDequityRedemption = dequityRedemption.connect(deployer);
+      await expect(notOwnerDequityRedemption.setAPR(2)).to.be.revertedWith(
         "Only the owner can call this method"
       );
     });
 
     it("New apr can not be higher than 100", async () => {
-      const update = async () => await dequityRedemption.connect(owner).setAPR(101);
-      await expect(update()).to.be.revertedWith(
+      await expect(dequityRedemption.setAPR(101)).to.be.revertedWith(
         "APR can not be greater than 100"
       );
     });
@@ -65,24 +62,18 @@ describe("Redemption", async () => {
   describe("Mint tokens", () => {
     it("Owner create tokens for an account, should mint", async () => {
       const holderAddress = await holder.getAddress();
-      const data = new Interface(ABI).functions.mint.encode([
-        holderAddress,
-        50,
-      ]);
-      await owner.sendTransaction({
-        to: dequityRedemption.address,
-        data,
-      });
-      const holderBalance = await dequityRedemption.functions.balanceOf(
+      await dequityRedemption.mint(holderAddress, 50);
+      const holderBalance = await dequityRedemption.balanceOf(
         holderAddress
       );
       expect(holderBalance).to.eq("50");
     });
 
     it("An account that is not the owner tries to mint, it should fail", async () => {
-      const randomAddress = await randomAccount.getAddress();
       await expect(
-        dequityRedemption.mint(randomAddress, 200)
+        dequityRedemption.connect(randomAccount).mint(
+          await randomAccount.getAddress(), 200
+        )
       ).to.be.revertedWith("Only the owner can call this method");
     });
   });
