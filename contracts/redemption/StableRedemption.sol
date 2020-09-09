@@ -1,3 +1,5 @@
+pragma solidity ^0.6.8;
+
 import "@openzeppelin/contracts-ethereum-package/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
 
@@ -22,7 +24,7 @@ contract StableRedemption is Ownable {
     bool listed
   );
 
-  event TokenSet(address indexed token)
+  event TokenSet(address indexed token);
 
   function initialize(
     address _owner,
@@ -56,10 +58,20 @@ contract StableRedemption is Ownable {
     _transferToken(_token, _amount, _destination);
   }
 
+  /**
+  * @notice Redeem a specified amount of tokens from the redeem token
+  * @param _redeemToken - Redeem Token
+  * @param _amount - Amount of "input" token (not redeem tokens)
+  */
   function redeem(IERC20 _redeemToken, uint256 _amount) {
     _redeem(_redeemToken, _amount, msg.sender);
   }
 
+  /**
+  * @notice Redeem a specified amount of tokens from the redeem token
+  * @param _redeemTokens - Redeem Token
+  * @param _amounts - Amount of "input" token (not redeem tokens)
+  */
   function redeemMulti(IERC20[] _redeemTokens, uint256[] _amounts) {
     require(
       _redeemTokens.length == _amounts.length,
@@ -97,10 +109,6 @@ contract StableRedemption is Ownable {
       "Redemption token is not whitelisted"
     );
     require(
-      _redeemToken.balanceOf(this) >= _amount,
-      "Not enough tokens available for requested redemption amount"
-    );
-    require(
       token.balanceOf(_redeemer) >= _amount,
       "Redeemer does not have enough tokens"
     );
@@ -109,7 +117,23 @@ contract StableRedemption is Ownable {
       "Unable to spend the redeemer's tokens on their behalf"
     );
 
+    // Adjust the request amount of token to the redeem token's decimals
+    uint256 redeemAmount = 0;
+
+    if (_redeemToken.decimals() > token.decimals()) {
+      uint256 decimalDif = _redeemToken.decimals() - token.decimals();
+      redeemAmount = _amount * (10 ** decimalDif);
+    } else {
+      uint256 decimalDif = token.decimals() - _redeemToken.decimals();
+      redeemAmount = _amount / (10 ** decimalDif);
+    }
+
+    require(
+      _redeemToken.balanceOf(this) >= redeemAmount,
+      "Not enough tokens available for requested redemption amount"
+    );
+
     token.transferFrom(_redeemer, this, _amount);
-    _transferToken(_redeemToken, _amount, _redeemer);
+    _transferToken(_redeemToken, redeemAmount, _redeemer);
   }
 }
