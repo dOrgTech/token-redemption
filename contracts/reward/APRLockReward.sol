@@ -1,7 +1,7 @@
-pragma solidity ^0.6.8;
+pragma solidity 0.5.16;
 
-import "../lib/Ownable.sol";
-import "../lib/IERC20.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Detailed.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 
 /**
@@ -27,7 +27,7 @@ contract APRLockReward is Ownable {
   }
 
   /// @notice Token that can be locked for additional tokens as a reward
-  IERC20 public token;
+  ERC20Detailed public token;
 
   /// @notice History of APR updates
   APRUpdate[] public aprHistory;
@@ -46,18 +46,18 @@ contract APRLockReward is Ownable {
 
   function initialize(
     address _owner,
-    IERC20 _token,
+    ERC20Detailed _token,
     uint256 _apr
   ) external initializer {
-    __Ownable_init();
-    transferOwnership(_owner);
+    Ownable.initialize(msg.sender);
+    _transferOwnership(_owner);
 
     _setToken(_token);
 
     _setAPR(_apr);
   }
 
-  function setToken(IERC20 _token) external onlyOwner {
+  function setToken(ERC20Detailed _token) external onlyOwner {
     _setToken(_token);
   }
 
@@ -146,7 +146,7 @@ contract APRLockReward is Ownable {
     return rewards;
   }
 
-  function _setToken(IERC20 _token) internal {
+  function _setToken(ERC20Detailed _token) internal {
     token = _token;
     emit TokenSet(address(token));
   }

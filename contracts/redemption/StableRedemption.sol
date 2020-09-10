@@ -1,7 +1,7 @@
-pragma solidity ^0.6.8;
+pragma solidity 0.5.16;
 
-import "../lib/Ownable.sol";
-import "../lib/IERC20.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Detailed.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 
 /**
@@ -18,10 +18,10 @@ contract StableRedemption is Ownable {
   using SafeMath for uint8;
 
   /// @notice Token that can be redeemed for a redemption token
-  IERC20 public inputToken;
+  ERC20Detailed public inputToken;
 
   /// @notice Whitelisted redeemable stable tokens
-  mapping(IERC20 => bool) public tokenList;
+  mapping(address => bool) public tokenList;
 
   event TokenListUpdated(
     address indexed token,
@@ -32,11 +32,11 @@ contract StableRedemption is Ownable {
 
   function initialize(
     address _owner,
-    IERC20 _inputToken,
-    IERC20[] calldata _redemptionTokens
+    ERC20Detailed _inputToken,
+    ERC20Detailed[] calldata _redemptionTokens
   ) external initializer {
-    __Ownable_init();
-    transferOwnership(_owner);
+    Ownable.initialize(msg.sender);
+    _transferOwnership(_owner);
 
     _setInputToken(_inputToken);
 
@@ -46,19 +46,19 @@ contract StableRedemption is Ownable {
     }
   }
 
-  function setInputToken(IERC20 _inputToken) external onlyOwner {
+  function setInputToken(ERC20Detailed _inputToken) external onlyOwner {
     _setInputToken(_inputToken);
   }
 
-  function listRedeemToken(IERC20 _redeemToken) external onlyOwner {
+  function listRedeemToken(ERC20Detailed _redeemToken) external onlyOwner {
     _listRedeemToken(_redeemToken);
   }
 
-  function unlistRedeemToken(IERC20 _redeemToken) external onlyOwner {
+  function unlistRedeemToken(ERC20Detailed _redeemToken) external onlyOwner {
     _unlistRedeemToken(_redeemToken);
   }
 
-  function transferToken(IERC20 _token, uint256 _amount, address _destination) external onlyOwner {
+  function transferToken(ERC20Detailed _token, uint256 _amount, address _destination) external onlyOwner {
     _transferToken(_token, _amount, _destination);
   }
 
@@ -67,7 +67,7 @@ contract StableRedemption is Ownable {
   * @param _redeemToken - Redeem Token
   * @param _amount - Amount of "input" token (not redeem tokens)
   */
-  function redeem(IERC20 _redeemToken, uint256 _amount) external {
+  function redeem(ERC20Detailed _redeemToken, uint256 _amount) external {
     _redeem(_redeemToken, _amount, msg.sender);
   }
 
@@ -76,7 +76,7 @@ contract StableRedemption is Ownable {
   * @param _redeemTokens - Redeem Token
   * @param _amounts - Amount of "input" token (not redeem tokens)
   */
-  function redeemMulti(IERC20[] calldata _redeemTokens, uint256[] calldata _amounts) external {
+  function redeemMulti(ERC20Detailed[] calldata _redeemTokens, uint256[] calldata _amounts) external {
     require(
       _redeemTokens.length == _amounts.length,
       "Number of tokens must match the number of amounts"
@@ -88,28 +88,28 @@ contract StableRedemption is Ownable {
     }
   }
 
-  function _setInputToken(IERC20 _inputToken) internal {
+  function _setInputToken(ERC20Detailed _inputToken) internal {
     inputToken = _inputToken;
     emit InputTokenSet(address(inputToken));
   }
 
-  function _listRedeemToken(IERC20 _redeemToken) internal {
-    tokenList[_redeemToken] = true;
+  function _listRedeemToken(ERC20Detailed _redeemToken) internal {
+    tokenList[address(_redeemToken)] = true;
     emit TokenListUpdated(address(_redeemToken), true);
   }
 
-  function _unlistRedeemToken(IERC20 _redeemToken) internal {
-    tokenList[_redeemToken] = false;
+  function _unlistRedeemToken(ERC20Detailed _redeemToken) internal {
+    tokenList[address(_redeemToken)] = false;
     emit TokenListUpdated(address(_redeemToken), false);
   }
 
-  function _transferToken(IERC20 _token, uint256 _amount, address _destination) internal {
+  function _transferToken(ERC20Detailed _token, uint256 _amount, address _destination) internal {
     _token.transfer(_destination, _amount);
   }
 
-  function _redeem(IERC20 _redeemToken, uint256 _amount, address _redeemer) internal {
+  function _redeem(ERC20Detailed _redeemToken, uint256 _amount, address _redeemer) internal {
     require(
-      tokenList[_redeemToken] == true,
+      tokenList[address(_redeemToken)] == true,
       "Redemption token is not whitelisted"
     );
     require(
@@ -128,9 +128,9 @@ contract StableRedemption is Ownable {
       redeemAmount = _amount;
     } else if (_redeemToken.decimals() > inputToken.decimals()) {
       uint256 decimalDif = uint256(_redeemToken.decimals().sub(inputToken.decimals()));
-      redeemAmount = _amount.div(10 ** decimalDif);
+      redeemAmount = _amount.mul(10 ** decimalDif);
     } else {
-      uint256 decimalDif = inputToken.decimals().sub(_redeemToken.decimals());
+      uint256 decimalDif = uint256(inputToken.decimals().sub(_redeemToken.decimals()));
       redeemAmount = _amount.div(10 ** decimalDif);
     }
 
