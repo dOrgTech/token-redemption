@@ -5,9 +5,9 @@ import "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 
 /**
- * @dev Lock token to earn variable APR
+ * @dev Stake tokens to earn variable APR
  */
-contract APRLockReward is Ownable {
+contract StakingReward is Ownable {
 
   using SafeMath for uint256;
 
@@ -21,27 +21,30 @@ contract APRLockReward is Ownable {
     uint256 timestamp;
   }
 
-  struct Lock {
+  struct Stake {
     uint256 amount;
     uint256 timestamp;
   }
 
-  /// @notice Token that can be locked for additional tokens as a reward
+  /// @notice Token that can be staked for additional tokens as a reward
   ERC20Detailed public token;
 
   /// @notice History of APR updates
   APRUpdate[] public aprHistory;
 
-  /// @notice Tokens locked per holder
-  mapping(address => Lock) public tokenLocks;
+  /// @notice Tokens staked per holder
+  mapping(address => Stake) public tokenStakes;
+
+  /// @notice Total tokens staked
+  uint256 public totalStaked;
 
   /// @notice Unclaimed rewards per holder
-  mapping(address => uint256) unclaimedRewards;
+  mapping(address => uint256) public unclaimedRewards;
 
   event TokenSet(address indexed token);
   event APRSet(uint256 apr, uint256 timestamp);
-  event TokensLocked(address indexed holder, uint256 amount, uint256 timestamp);
-  event TokensUnlocked(address indexed holder, uint256 amount, uint256 timestamp);
+  event TokensStaked(address indexed holder, uint256 amount, uint256 timestamp);
+  event TokensUnstaked(address indexed holder, uint256 amount, uint256 timestamp);
   event RewardsClaimed(address indexed holder, uint256 amount);
 
   function initialize(
@@ -65,12 +68,16 @@ contract APRLockReward is Ownable {
     _setAPR(_apr);
   }
 
-  function lock(uint256 _amount) external {
-    _lock(msg.sender, _amount);
+  function transferToken(ERC20Detailed _token, uint256 _amount, address _destination) external onlyOwner {
+    _transferToken(_token, _amount, _destination);
   }
 
-  function unlock(uint256 _amount) external {
-    _unlock(msg.sender, _amount);
+  function stake(uint256 _amount) external {
+    _stake(msg.sender, _amount);
+  }
+
+  function unstake(uint256 _amount) external {
+    _unstake(msg.sender, _amount);
   }
 
   function claimRewards() external {
@@ -87,33 +94,42 @@ contract APRLockReward is Ownable {
     _updateUnclaimedRewards(_holder);
   }
 
-  function unlockAndClaim(uint256 _amount) external {
-    _unlock(msg.sender, _amount);
+  function unstakeAndClaim(uint256 _amount) external {
+    _unstake(msg.sender, _amount);
     _claimRewards(msg.sender, unclaimedRewards[msg.sender]);
   }
 
-  function rewardsAvailable() public view returns (uint256) {
-    return token.balanceOf(address(this));
+  function apr() public view returns (uint256) {
+    require(aprHistory.length > 0);
+    return aprHistory[aprHistory.length - 1].apr;
   }
 
-  function tokensLocked(address _holder) public view returns (uint256) {
-    return tokenLocks[_holder].amount;
+  function rewardsAvailable() public view returns (uint256) {
+    return token.balanceOf(address(this)) - totalStaked;
+  }
+
+  function tokensStaked(address _holder) public view returns (uint256) {
+    return tokenStakes[_holder].amount;
   }
 
   function calculateRewards(address _holder) public view returns (uint256) {
-    return unclaimedRewards[_holder].add(calculateLockRewards(_holder));
+    return unclaimedRewards[_holder].add(calculateStakeRewards(_holder));
   }
 
-  function calculateLockRewards(address _holder) public view returns (uint256) {
-    Lock memory locked = tokenLocks[_holder];
+  function calculateStakeRewards(address _holder) public view returns (uint256) {
+    Stake memory staked = tokenStakes[_holder];
 
-    if (locked.amount == 0) {
+    if (staked.amount == 0 && unclaimedRewards[_holder] == 0) {
+      return 0;
+    }
+
+    if (staked.timestamp == block.timestamp) {
       return 0;
     }
 
     uint256 rewards = 0;
 
-    uint aprStart = _findPastAPRIndex(locked.timestamp);
+    uint aprStart = _findPastAPRIndex(staked.timestamp);
     uint aprEnd = aprHistory.length;
 
     for (uint i = aprStart; i < aprEnd; i++) {
@@ -121,7 +137,7 @@ contract APRLockReward is Ownable {
       uint256 fromAprTime = aprUpdate.timestamp;
 
       if (i == aprStart) {
-        fromAprTime = locked.timestamp;
+        fromAprTime = staked.timestamp;
       }
 
       uint256 toAprTime;
@@ -133,13 +149,15 @@ contract APRLockReward is Ownable {
       }
 
       uint256 timePeriod = toAprTime.sub(fromAprTime);
-      uint256 totalTokens = locked.amount.add(unclaimedRewards[_holder]);
+      uint256 totalTokens = staked.amount.add(unclaimedRewards[_holder]);
 
       // rewards = tokens * APR * (time / year)
-      // - don't forget to remove the 2 decimal places added by the APR
+      // - don't forget to remove the decimal places added by the APR
+      //   and time period precision (16)
       rewards = rewards.add(
-        (totalTokens.mul(aprUpdate.apr).mul(timePeriod.div(SECONDS_IN_YEAR)))
-          .div(10 ** APR_DECIMALS)
+        totalTokens.mul(aprUpdate.apr).mul(
+          timePeriod.mul(10 ** 16).div(SECONDS_IN_YEAR)
+        ).div(10 ** APR_DECIMALS.add(16))
       );
     }
 
@@ -156,7 +174,11 @@ contract APRLockReward is Ownable {
     emit APRSet(_apr, block.timestamp);
   }
 
-  function _lock(address _holder, uint256 _amount) internal {
+  function _transferToken(ERC20Detailed _token, uint256 _amount, address _destination) internal {
+    _token.transfer(_destination, _amount);
+  }
+
+  function _stake(address _holder, uint256 _amount) internal {
     require(_amount > 0, "Amount must be greater than 0");
     require(
       token.allowance(_holder, address(this)) >= _amount,
@@ -169,37 +191,39 @@ contract APRLockReward is Ownable {
 
     _updateUnclaimedRewards(_holder);
 
-    tokenLocks[_holder].amount = tokenLocks[_holder].amount.add(_amount);
+    tokenStakes[_holder].amount = tokenStakes[_holder].amount.add(_amount);
+    totalStaked = totalStaked.add(_amount);
 
     token.transferFrom(_holder, address(this), _amount);
 
-    emit TokensLocked(_holder, _amount, block.timestamp);
+    emit TokensStaked(_holder, _amount, block.timestamp);
   }
 
-  function _unlock(address _holder, uint256 _amount) internal {
+  function _unstake(address _holder, uint256 _amount) internal {
     require(_amount > 0, "Amount must be greater than 0");
     require(
-      tokenLocks[_holder].amount >= _amount,
-      "User does not have this many tokens locked"
+      tokenStakes[_holder].amount >= _amount,
+      "User does not have this many tokens staked"
     );
 
     _updateUnclaimedRewards(_holder);
 
-    tokenLocks[_holder].amount = tokenLocks[_holder].amount.sub(_amount);
+    tokenStakes[_holder].amount = tokenStakes[_holder].amount.sub(_amount);
+    totalStaked = totalStaked.sub(_amount);
 
-    token.transfer(_holder, _amount);
+    _transferToken(token, _amount, _holder);
 
-    emit TokensUnlocked(_holder, _amount, block.timestamp);
+    emit TokensUnstaked(_holder, _amount, block.timestamp);
   }
 
   function _updateUnclaimedRewards(address holder) internal {
-    unclaimedRewards[holder] = unclaimedRewards[holder].add(calculateLockRewards(holder));
-    tokenLocks[holder].timestamp = block.timestamp;
+    unclaimedRewards[holder] = unclaimedRewards[holder].add(calculateStakeRewards(holder));
+    tokenStakes[holder].timestamp = block.timestamp;
   }
 
   function _claimRewards(address _holder, uint256 _amount) internal {
     require(
-      token.balanceOf(address(this)) >= _amount,
+      rewardsAvailable() >= _amount,
       "Not enough rewards available for this claim"
     );
     require(
@@ -209,7 +233,7 @@ contract APRLockReward is Ownable {
 
     unclaimedRewards[_holder] = unclaimedRewards[_holder].sub(_amount);
 
-    token.transfer(_holder, _amount);
+    _transferToken(token, _amount, _holder);
 
     emit RewardsClaimed(_holder, _amount);
   }
