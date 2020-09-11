@@ -175,6 +175,15 @@ describe("StableRedemption", async () => {
     expect(await inputToken.balanceOf(user))
       .to.be.eq(new BigNumber(0));
 
+    expect(await dec16Token.balanceOf(stableRedemption.address))
+      .to.be.eq(new BigNumber(0));
+
+    expect(await dec18Token.balanceOf(stableRedemption.address))
+      .to.be.eq(new BigNumber(0));
+
+    expect(await dec22Token.balanceOf(stableRedemption.address))
+      .to.be.eq(new BigNumber(0));
+
     expect(await inputToken.balanceOf(stableRedemption.address))
       .to.be.eq(amount18.mul(3));
 
