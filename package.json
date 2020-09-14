@@ -7,10 +7,9 @@
     "clean": "rm -rf artifacts && rm -rf cache && rm -rf types",
     "build": "yarn clean && npx buidler compile && npx buidler typechain",
     "test": "npx buidler test",
-    "lint": "npx buidler check",
-    "deploy:rinkeby": "npx buidler run --network rinkeby scripts/deploy.ts",
-    "deploy:mainnet": "npx buidler run --network mainnet scripts/deploy.ts",
-    "coverage": "yarn build && npx buidler coverage --temp artifacts --network coverage"
+    "coverage": "yarn build && npx buidler coverage --temp artifacts --network coverage",
+    "deploy:rinkeby": "NETWORK=rinkeby npx buidler run --network rinkeby scripts/deploy.ts",
+    "deploy:mainnet": "NETWORK=mainnet npx buidler run --network mainnet scripts/deploy.ts"
   },
   "repository": {
     "type": "git",
@@ -28,7 +27,8 @@
     "@nomiclabs/buidler-etherscan": "^1.3.3",
     "@nomiclabs/buidler-solhint": "^1.3.3",
     "@nomiclabs/buidler-waffle": "^1.3.3",
-    "@openzeppelin/contracts-ethereum-package": "^3.0.0",
+    "@openzeppelin/contracts-ethereum-package": "^2.5.0",
+    "@openzeppelin/upgrades": "^2.8.0",
     "@typechain/ethers-v4": "^1.0.0",
     "@typechain/truffle-v4": "^2.0.2",
     "@typechain/truffle-v5": "^2.0.2",

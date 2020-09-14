@@ -1,21 +1,38 @@
-import { ethers } from "@nomiclabs/buidler";
-import { exec } from 'child_process'
+import {
+  deployAndVerify,
+  loadConfig,
+  logDeployment
+} from "./common";
+
+const getContracts = () => process.env.DEPLOY_CONTRACTS?.split(',');
+
+const log: any = { }
 
 async function main() {
-  const factory = await ethers.getContract("DequityRedemption");
+  const contracts = getContracts();
 
-  // If we had constructor arguments, they would be passed into deploy()
-  let contract = await factory.deploy();
+  if (!contracts) {
+    throw Error(`Error: env.DEPLOY_CONTRACTS isn't defined`);
+  }
 
-  // The address the Contract WILL have once mined
-  console.log("Contract at address: " + contract.address);
+  for (const contract of contracts) {
+    const config = loadConfig(contract);
 
-  // The transaction that was sent to the network to deploy the Contract
-  console.log("Tx hash: " + contract.deployTransaction.hash);
-  
-  // The contract is NOT deployed yet; we must wait until it is mined
-  await contract.deployed();
-  exec(`npx buidler verify-contract --contract-name DequityRedemption --address ${contract.address}`)
+    const sc = await deployAndVerify(
+      contract, (address, tx) =>
+      log[contract] = { address, tx }
+    );
+
+    await sc.initialize(
+      ...config
+    );
+
+    log[contract].initializeParams = {
+      ...config
+    };
+
+    logDeployment(log, contract);
+  }
 }
 
 main()
