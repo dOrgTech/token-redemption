@@ -7,10 +7,9 @@
     "clean": "rm -rf artifacts && rm -rf cache && rm -rf types",
     "build": "yarn clean && npx buidler compile && npx buidler typechain",
     "test": "npx buidler test",
-    "lint": "npx buidler check",
-    "deploy:rinkeby": "npx buidler run --network rinkeby scripts/deploy.ts",
-    "deploy:mainnet": "npx buidler run --network mainnet scripts/deploy.ts",
-    "coverage": "yarn build && npx buidler coverage --temp artifacts --network coverage"
+    "coverage": "yarn build && npx buidler coverage --temp artifacts --network coverage",
+    "deploy:rinkeby": "NETWORK=rinkeby npx buidler run --network rinkeby scripts/deploy.ts",
+    "deploy:mainnet": "NETWORK=mainnet npx buidler run --network mainnet scripts/deploy.ts"
   },
   "repository": {
     "type": "git",

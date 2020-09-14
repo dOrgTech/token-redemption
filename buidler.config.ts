@@ -18,14 +18,17 @@ const {
 const config: BuidlerConfig = {
   solc: {
     version: "0.5.16",
+    optimizer: {
+      enabled: true,
+    }
   },
   networks: {
     rinkeby: {
       url: `https://rinkeby.infura.io/v3/${INFURA_API_KEY}`,
-      accounts: [PRIVATE_KEY!]
+      accounts: [PRIVATE_KEY!],
     },
     mainnet: {
-      url: `https://infura.io/v3/${INFURA_API_KEY}`,
+      url: `https://mainnet.infura.io/v3/${INFURA_API_KEY}`,
       accounts: [PRIVATE_KEY!]
     },
     coverage: {
