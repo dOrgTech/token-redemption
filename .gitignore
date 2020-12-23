@@ -3,4 +3,5 @@ node_modules
 cache
 artifacts
 types
+scripts
 coverage*

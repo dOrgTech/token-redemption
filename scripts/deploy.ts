@@ -23,15 +23,13 @@ async function main() {
       log[contract] = { address, tx }
     );
 
-    await sc.initialize(
-      ...config
-    );
+    await sc.initialize(config.owner, config.inputToken, config.redemptionTokens)
 
     log[contract].initializeParams = {
       ...config
     };
 
-    logDeployment(log, contract);
+    //logDeployment(log, contract);
   }
 }
 

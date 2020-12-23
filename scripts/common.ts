@@ -15,6 +15,7 @@ export async function deployAndVerify(
   await new Promise((resolve) =>
     setTimeout(() => resolve(), 30000)
   );
+  /**
   await new Promise((resolve, reject) =>
     exec(
       `npx buidler verify-contract --contract-name ${name} --address ${contract.address} --show-stack-traces`,
@@ -32,7 +33,7 @@ export async function deployAndVerify(
         }
       }
     )
-  );
+  ); **/
   return contract;
 }
 
