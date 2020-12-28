@@ -1,6 +1,6 @@
 import fs from "fs";
 import { ethers } from "@nomiclabs/buidler";
-import { exec, ExecException } from "child_process";
+//import { exec, ExecException } from "child_process";
 
 const network = process.env.NETWORK || 'undefined';
 
@@ -15,25 +15,25 @@ export async function deployAndVerify(
   await new Promise((resolve) =>
     setTimeout(() => resolve(), 30000)
   );
-  /**
-  await new Promise((resolve, reject) =>
-    exec(
-      `npx buidler verify-contract --contract-name ${name} --address ${contract.address} --show-stack-traces`,
-      {
-        cwd: `${__dirname}/../`
-      },
-      (error: ExecException | null, stdout: string, stderr: string) => {
-        if (error !== null) {
-          console.log(stdout);
-          console.error(stderr);
-          reject(new Error(error.message));
-        } else {
-          console.log(stdout);
-          resolve();
-        }
-      }
-    )
-  ); **/
+
+  // await new Promise((resolve, reject) =>
+  //   exec(
+  //     `npx buidler verify-contract --contract-name ${name} --address ${contract.address} --show-stack-traces`,
+  //     {
+  //       cwd: `${__dirname}/../`
+  //     },
+  //     (error: ExecException | null, stdout: string, stderr: string) => {
+  //       if (error !== null) {
+  //         console.log(stdout);
+  //         console.error(stderr);
+  //         reject(new Error(error.message));
+  //       } else {
+  //         console.log(stdout);
+  //         resolve();
+  //       }
+  //     }
+  //   )
+  // );
   return contract;
 }
 
@@ -59,6 +59,7 @@ export function logDeployment(log: any, contract: string) {
   const filename = `${time}-${network}-${contract}.json`;
   fs.writeFileSync(
     `${__dirname}/../logs/${filename}`,
+    //`${__dirname}/../artifacts/Addresses.json`,
     JSON.stringify(log, null, 2)
   );
 }

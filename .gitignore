@@ -1,7 +1,2 @@
 node_modules
-.env
-cache
-artifacts
-types
-scripts
-coverage*
+*.log

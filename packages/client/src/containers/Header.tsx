@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getProvider, getDorgTokenBalance } from '../services';
+import { getDorgTokenBalance } from '../services';
 import { ethers } from 'ethers';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';

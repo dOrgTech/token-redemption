@@ -1,23 +1,24 @@
-[![Build Status](https://travis-ci.org/dOrgTech/token-redemption.svg)](https://travis-ci.org/dOrgTech/token-redemption)
-# Token Redemption
+## dOrg Token Redemption / Staking
+dOrg internal project for the DORG token.
 
-> Smart contract for the dOrg Token ecosystem.
+## Packages  
+| Package | Description |  
+|---------|-------------|  
+| [@dorgtech/dorg-token-contracts](./packages/protocol) | Solidity Contracts |
+| [@dorgtech/dorg-token-ui](./packages/client) | Javascript Client |  
 
-# Contracts
-## Redemption
-- [`StableRedemption`](./contracts/redemption/StableRedemption.sol) - Redeem 1 input token for 1 redmeption token.
+### Prerequisites  
+- `nvm`  
+- `yarn`
 
-## Reward
-- [`StakingReward`](./contracts/reward/StakingReward.sol) - Stake tokens to earn variable APR.
+### Installation  
+`nvm install && nvm use`  
+`yarn`  
 
-# Build & Contribute
+## client
+> `yarn client`
 
-## Prerequisites
-
-- nvm
-- You must create a `.env` file, checkout .env-example for reference
-
-## Testing
+## Testing Contracts
 > `yarn build`  
 > `yarn test`
 
