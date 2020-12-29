@@ -6,15 +6,15 @@
     "packages/*"
   ],
   "scripts": {
-    "clean": "yarn workspace @dorgtech/dorg-token-contracts rm -rf artifacts && rm -rf cache && rm -rf types",
-    "build": "yarn workspace @dorgtech/dorg-token-contracts clean && npx buidler compile && npx buidler typechain",
-    "test": "yarn workspace @dorgtech/dorg-token-contracts npx buidler test",
-    "coverage": "yarn workspace @dorgtech/dorg-token-contracts build && npx buidler coverage --temp artifacts --network coverage",
-    "deploy:rinkeby": "yarn workspace @dorgtech/dorg-token-contracts && NETWORK=rinkeby npx buidler run --network rinkeby scripts/deploy.ts",
-    "deploy:mainnet": "yarn workspace @dorgtech/dorg-token-contracts && NETWORK=mainnet npx buidler run --network mainnet scripts/deploy.ts",
+    "clean": "yarn workspace @dorgtech/dorg-token-contracts clean",
+    "build": "yarn workspace @dorgtech/dorg-token-contracts build",
+    "test": "yarn workspace @dorgtech/dorg-token-contracts test",
+    "coverage": "yarn workspace @dorgtech/dorg-token-contracts coverage",
+    "deploy:rinkeby": "yarn workspace @dorgtech/dorg-token-contracts deploy:rinkeby",
+    "deploy:mainnet": "yarn workspace @dorgtech/dorg-token-contracts deploy:mainnet",
     "client": "yarn workspace @dorgtech/dorg-token-ui start"
   },
   "devDependencies": {
-    "lerna": "^3.22.1"
+    "lerna": "3.22.1"
   }
 }

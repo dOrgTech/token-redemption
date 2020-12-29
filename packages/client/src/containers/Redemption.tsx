@@ -6,23 +6,30 @@ import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import MenuItem from '@material-ui/core/MenuItem';
+import Addresses from '@dorgtech/dorg-token-contracts/artifacts/Addresses.json';
+
+type StableCoin = {
+  value: string,
+  label: string
+}
 
 //rinkeby stablecoin contracts
-const stablecoins = [
+const { redemptionTokens } = Addresses.StableRedemption.initializeParams;
+const stablecoins: StableCoin[] = [
   {
-    value: "0xec11d004548C393de05Cc91eCA3eC411F0DE0dFb",
+    value: redemptionTokens[0],
     label: 'USDC',
   },
   {
-    value: "0xA7F42De18799F62718fB80FCea59cC2713c45412",
+    value: redemptionTokens[1],
     label: 'USDT',
   },
   {
-    value: "0x97D570eA0320946AF6BA7f8B40840947a228f6Bf",
+    value: redemptionTokens[2],
     label: 'DAI',
   },
   {
-    value: "0x71144d684f4C3F0cBA08aEe4FE1945C30a4CF631",
+    value: redemptionTokens[3],
     label: 'TUSD',
   },
 ];
@@ -45,7 +52,7 @@ function Redemption() {
 
   const [inputTokenAmount, setInputTokenAmount] = useState(0);
 
-  const handleDorgTokenAmount = (event: any) => {
+  const handleDorgTokenAmount = (event: any): void => {
     setInputTokenAmount(event.target.value);
   };
 
@@ -53,7 +60,7 @@ function Redemption() {
   const [stablename, setStablename] = useState('');
 
 
-  const handleStablecoin = (event: any) => {
+  const handleStablecoin = (event: any): void => {
     const { value } = event.target;
     setStablecoin(value);
     const labels = stablecoins.filter((coin) => {
@@ -82,7 +89,7 @@ function Redemption() {
         return `Please confirm you want to redeem: ${inputTokenAmount} DORG to ${stablename}`;
       }
     });
-  })
+  }, [inputTokenAmount, stablecoin, stablename])
 
   return (
     <form className={classes.root} noValidate autoComplete="off">

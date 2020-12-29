@@ -4,13 +4,12 @@
   "description": "Smart contracts for the dOrg token development flow",
   "main": "index.ts",
   "scripts": {
-    "clean": "rm -rf artifacts && rm -rf cache && rm -rf types",
+    "clean": "rimraf artifacts && rimraf cache && rimraf types",
     "build": "yarn clean && npx buidler compile && npx buidler typechain",
     "test": "npx buidler test",
     "coverage": "yarn build && npx buidler coverage --temp artifacts --network coverage",
     "deploy:rinkeby": "NETWORK=rinkeby npx buidler run --network rinkeby scripts/deploy.ts",
-    "deploy:mainnet": "NETWORK=mainnet npx buidler run --network mainnet scripts/deploy.ts",
-    "ui": "cd client && yarn start"
+    "deploy:mainnet": "NETWORK=mainnet npx buidler run --network mainnet scripts/deploy.ts"
   },
   "repository": {
     "type": "git",
@@ -47,6 +46,7 @@
     "ts-generator": "0.0.8",
     "ts-node": "^8.10.1",
     "typechain": "^2.0.0",
+    "rimraf": "3.0.2",
     "typescript": "^3.9.3"
   }
 }

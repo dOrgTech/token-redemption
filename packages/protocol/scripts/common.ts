@@ -59,7 +59,11 @@ export function logDeployment(log: any, contract: string) {
   const filename = `${time}-${network}-${contract}.json`;
   fs.writeFileSync(
     `${__dirname}/../logs/${filename}`,
-    //`${__dirname}/../artifacts/Addresses.json`,
+    `${__dirname}/../artifacts/Addresses.json`,
+    JSON.stringify(log, null, 2)
+  );
+  fs.writeFileSync(
+    `${__dirname}/../artifacts/Addresses.json`,
     JSON.stringify(log, null, 2)
   );
 }
