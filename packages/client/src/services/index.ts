@@ -1,5 +1,5 @@
 import StableRedemptionArtifact from "@dorgtech/dorg-token-contracts/artifacts/StableRedemption.json";
-import DorgTokenContract from "@dorgtech/dorg-token-contracts/artifacts/DorgTokenContract.json";
+import ERC20 from "@dorgtech/dorg-token-contracts/artifacts/ERC20.json";
 import Addresses from '@dorgtech/dorg-token-contracts/artifacts/Addresses.json';
 import { Web3 } from "./web3";
 
@@ -15,7 +15,7 @@ const getStableRedemptionContract = async (): Promise<any> => {
 const getDorgTokenBalance = async (): Promise<any> => {
   const { inputToken } = Addresses.StableRedemption.initializeParams;
   const tokenAddress = inputToken;
-  const { abi } = DorgTokenContract;
+  const { abi } = ERC20;
   const web3 = await Web3.getInstance();
   const provider = await web3.provider;
   const accounts = await provider.listAccounts();
