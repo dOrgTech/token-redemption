@@ -2,11 +2,16 @@
   "name": "root",
   "license": "MIT",
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": {
+    "packages": [
+      "./packages/*"
+    ],
+    "nohoist": [
+      "**/@nomiclabs/**"
+    ]
+  },
   "scripts": {
-    "clean": "yarn workspace @dorgtech/dorg-token-contracts clean",
+    "clean": "lerna run clean && rimraf ./**/node_modules",
     "build": "yarn workspace @dorgtech/dorg-token-contracts build",
     "test": "yarn workspace @dorgtech/dorg-token-contracts test",
     "coverage": "yarn workspace @dorgtech/dorg-token-contracts coverage",
