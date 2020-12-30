@@ -22,6 +22,46 @@ const getDorgTokenBalance = async (): Promise<any> => {
   return balance;
 }
 
+const getUsdcTokenBalance = async (): Promise<any> => {
+  const { redemptionTokens } = Addresses.StableRedemption.initializeParams;
+  const { abi } = ERC20;
+  const web3 = await Web3.getInstance();
+  const { address } = Addresses.StableRedemption;
+  const instance = await web3.getContract(redemptionTokens[0], abi) as any;
+  const balance = await instance.balanceOf(address);
+  return balance;
+}
+
+const getUsdtTokenBalance = async (): Promise<any> => {
+  const { redemptionTokens } = Addresses.StableRedemption.initializeParams;
+  const { abi } = ERC20;
+  const web3 = await Web3.getInstance();
+  const { address } = Addresses.StableRedemption;
+  const instance = await web3.getContract(redemptionTokens[1], abi) as any;
+  const balance = await instance.balanceOf(address);
+  return balance;
+}
+
+const getDaiTokenBalance = async (): Promise<any> => {
+  const { redemptionTokens } = Addresses.StableRedemption.initializeParams;
+  const { abi } = ERC20;
+  const web3 = await Web3.getInstance();
+  const { address } = Addresses.StableRedemption;
+  const instance = await web3.getContract(redemptionTokens[2], abi) as any;
+  const balance = await instance.balanceOf(address);
+  return balance;
+}
+
+const getTusdTokenBalance = async (): Promise<any> => {
+  const { redemptionTokens } = Addresses.StableRedemption.initializeParams;
+  const { abi } = ERC20;
+  const web3 = await Web3.getInstance();
+  const { address } = Addresses.StableRedemption;
+  const instance = await web3.getContract(redemptionTokens[3], abi) as any;
+  const balance = await instance.balanceOf(address);
+  return balance;
+}
+
 const getSigner = async (): Promise<any> => {
   const web3 = await Web3.getInstance();
   const signer = web3.getSigner();
@@ -34,4 +74,13 @@ const getProvider = async (): Promise<any> => {
   return provider;
 }
 
-export { getStableRedemptionContract, getSigner, getProvider, getDorgTokenBalance };
+export {
+  getStableRedemptionContract,
+  getSigner,
+  getProvider,
+  getDorgTokenBalance,
+  getUsdcTokenBalance,
+  getUsdtTokenBalance,
+  getDaiTokenBalance,
+  getTusdTokenBalance,
+};

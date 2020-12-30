@@ -3,7 +3,7 @@ import { getDorgTokenBalance } from '../services';
 import { ethers } from 'ethers';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import { Redemption, MultRedemption } from './'
+import { MultRedemption } from './'
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -29,8 +29,8 @@ function Main() {
   // This function checks the balance of the current
   // provider account and updates the "inputBalance" state.
   const checkBalance = async (): Promise<any> => {
-  const balance = await getDorgTokenBalance();
-  const balanceRounded = (Math.round(Number(ethers.utils.formatEther(balance)) * 100) / 100).toFixed(3);
+    const balance = await getDorgTokenBalance();
+    const balanceRounded = (Math.round(Number(ethers.utils.formatEther(balance)) * 100) / 100).toFixed(3);
 
     setInputBalance(balanceRounded);
   }
@@ -41,10 +41,6 @@ function Main() {
     <div className={classes.root}>
       <Typography variant="h5">dOrg Token Redemption</Typography>
       <Typography variant="body2">balance: {inputBalance} DORG</Typography>
-      <hr></hr>
-      <Redemption inputBalance={Number(inputBalance)} />
-      <br></br>
-      <hr></hr>
       <MultRedemption inputBalance={Number(inputBalance)} />
     </div>
   );
