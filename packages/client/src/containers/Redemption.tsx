@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { ethers } from 'ethers';
+import { ethers, Contract, BigNumber, Signer } from 'ethers';
 import { getStableRedemptionContract, getSigner } from '../services';
-import { makeStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import TextField from '@material-ui/core/TextField';
-import MenuItem from '@material-ui/core/MenuItem';
+import { Typography, Button, TextField, MenuItem, Dialog, DialogActions, DialogContent,
+         DialogContentText, DialogTitle, makeStyles } from '@material-ui/core/';
 import Addresses from '@dorgtech/dorg-token-contracts/artifacts/Addresses.json';
+import { Address, EthereumSigner } from '../services/web3';
 
 type StableCoin = {
-  value: string,
+  value: Address,
   label: string
+}
+type props = {
+  inputBalance: number;
 }
 
 //rinkeby stablecoin contracts
@@ -46,16 +47,25 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function Redemption() {
+function Redemption(props: props) {
 
   const classes = useStyles();
+  const regexp: RegExp = /^\d*\.?\d*$/;
+
+  //User inputToken balance
+  const userInputTokenBalance: number = props.inputBalance;
 
   const [inputTokenAmount, setInputTokenAmount] = useState(0);
 
-  const handleDorgTokenAmount = (event: any): void => {
-    setInputTokenAmount(event.target.value);
+  const inputTokenNumber: number = Number(inputTokenAmount);
+  const handleInputTokenAmount = (event: any): void => {
+    const { value } = event.target;
+    if(value === '' || regexp.test(value)) {
+      setInputTokenAmount(value);
+    }
   };
 
+  //Stablecoin handling
   const [stablecoin, setStablecoin] = useState('');
   const [stablename, setStablename] = useState('');
 
@@ -63,6 +73,7 @@ function Redemption() {
   const handleStablecoin = (event: any): void => {
     const { value } = event.target;
     setStablecoin(value);
+
     const labels = stablecoins.filter((coin) => {
       return coin.value === value;
     })
@@ -70,40 +81,65 @@ function Redemption() {
     setStablename(label);
   };
 
+  //Function to redeem the inputToken for a StableCoin
   const redeemStable = async (): Promise<any> => {
-    const signer = await getSigner();
-    const instance = await getStableRedemptionContract();
-    const instanceSigned = await instance.connect(signer);
-    const amount = ethers.BigNumber.from(inputTokenAmount);
-    const ten = ethers.BigNumber.from(10);
-    const amount18 = amount.mul(ten.pow(18));
+    const signer: EthereumSigner = await getSigner();
+    const instance: Contract = await getStableRedemptionContract();
+    const instanceSigned: Contract = instance.connect(signer as Signer);
+    const amount: BigNumber = ethers.BigNumber.from(Number(inputTokenAmount));
+    const ten: BigNumber = ethers.BigNumber.from(10);
+    const amount18: BigNumber = amount.mul(ten.pow(18));
 
     instanceSigned.redeem(stablecoin, amount18);
+    setOpen(false);
   }
 
+  //Messages
   const [confMessage, setConfMessage] = useState('');
 
   useEffect(() => {
     setConfMessage((): any => {
-      if(inputTokenAmount !== 0 && stablecoin !== '') {
-        return `Please confirm you want to redeem: ${inputTokenAmount} DORG to ${stablename}`;
+      if(inputTokenNumber !== 0 && stablecoin !== '' && inputTokenNumber <= userInputTokenBalance) {
+        return `${inputTokenAmount} DORG to ${stablename}`;
       }
     });
   }, [inputTokenAmount, stablecoin, stablename])
+
+  //Material UI Dialog
+  const [open, setOpen] = useState(false);
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
 
   return (
     <form className={classes.root} noValidate autoComplete="off">
       <div>
         <br></br>
         <Typography>Swap Token</Typography>
+        {inputTokenNumber <= userInputTokenBalance ?
         <TextField
           id="outlined-select-dorgtokenamount"
           label="DORG token amount"
           value={inputTokenAmount}
-          onChange={handleDorgTokenAmount}
+          onChange={handleInputTokenAmount}
           helperText=""
           variant="outlined"
+        /> :
+        <TextField
+          error
+          id="outlined-error-dorgtokenamount"
+          label="insufficient funds"
+          value={inputTokenAmount}
+          onChange={handleInputTokenAmount}
+          helperText="You do not have enough dOrg tokens!"
+          variant="outlined"
         />
+       }
       </div>
       <div>
         <br></br>
@@ -128,11 +164,33 @@ function Redemption() {
         </TextField>
       </div>
       <div>
-        <br></br>
-        <Typography>{confMessage}</Typography>
-      </div>
-      <div>
-        <Button variant="contained" color="primary" onClick={redeemStable}> Redeem </Button>
+        {inputTokenNumber !== 0 && stablecoin !== '' && inputTokenNumber <= userInputTokenBalance && inputTokenNumber > 0 ?
+        <div>
+          <Button variant="contained" color="primary" onClick={handleClickOpen}> Redeem </Button>
+          <Dialog
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">{"Are you sure you want to redeem?"}</DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              {confMessage}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose} color="primary">
+              Cancel
+            </Button>
+            <Button onClick={redeemStable} color="primary" autoFocus>
+              Confirm
+            </Button>
+          </DialogActions>
+          </Dialog>
+        </div>
+         :
+        <Button variant="contained" disabled> Redeem </Button>}
       </div>
     </form>
   );

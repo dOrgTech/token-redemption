@@ -3,6 +3,7 @@ import { getDorgTokenBalance } from '../services';
 import { ethers } from 'ethers';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
+import { Redemption, MultRedemption } from './'
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -12,7 +13,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function Header() {
+function Main() {
 
   const [inputBalance, setInputBalance] = useState('');
 
@@ -40,8 +41,13 @@ function Header() {
     <div className={classes.root}>
       <Typography variant="h5">dOrg Token Redemption</Typography>
       <Typography variant="body2">balance: {inputBalance} DORG</Typography>
+      <hr></hr>
+      <Redemption inputBalance={Number(inputBalance)} />
+      <br></br>
+      <hr></hr>
+      <MultRedemption inputBalance={Number(inputBalance)} />
     </div>
   );
 }
 
-export default Header;
+export default Main;

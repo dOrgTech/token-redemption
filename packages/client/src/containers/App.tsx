@@ -1,13 +1,12 @@
 import React from 'react';
 import './App.css';
-import { Redemption, Header } from './';
+import { Main } from './';
 
 function App() {
 
   return (
     <div className="App">
-      <Header />
-      <Redemption />
+      <Main />
     </div>
   );
 }

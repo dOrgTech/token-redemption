@@ -1,10 +1,21 @@
-import { Signer, providers, BigNumber, ethers, Contract } from "ethers";
+import { Signer, providers, Contract } from "ethers";
 
-type IWeb3Provider = any;
+const { Web3Provider } = providers;
 
-export { Signer, BigNumber, ethers };
+export type Address = string;
+export type AccountIndex = number;
+export type EthereumSigner = Signer | Address | AccountIndex;
+export type EthereumProvider = string | providers.ExternalProvider;
+export type EthereumClient = providers.JsonRpcProvider | providers.Web3Provider;
 
-const { Web3Provider } = providers
+export interface IWeb3Provider {
+  provider: EthereumProvider;
+  signer?: EthereumSigner;
+  ens?: Address;
+  getSigner: any;
+  listAccounts: any;
+  getNetwork: any;
+}
 
 export class Web3 {
   private constructor() {}
@@ -21,17 +32,15 @@ export class Web3 {
   }
 
   public provider: IWeb3Provider | null = null;
-  public signer: Signer | null = null;
-  public proxyKit: any = null;
-  public contracts: any = [];
+  public signer: EthereumSigner | null = null;
 
   private async initialize() {
     try {
       // Use MetaMask provider IF user has metamask downloaded
       await (window as any).ethereum.enable();
       this.provider = new Web3Provider((window as any).ethereum);
-      // console.log('this.provider', this.provider)
-      this.signer = await this.provider.getSigner();
+      //console.log('this.provider', this.provider)
+      this.signer = this.provider!.getSigner();
       // console.log("this.signer, this.signer?.getGasPrice()", this.signer?.getGasPrice())
     } catch (error) {
       console.log('Error instanciating Web3 Class', error)
@@ -39,17 +48,26 @@ export class Web3 {
   }
 
   public getDefaultAddress = async () => {
-    const signer = await this.provider!.getSigner();
-    const address = await signer!.getAddress();
+    const signer: any = this.provider!.signer;
+    const address: Address = await signer!.getAddress();
     return address;
   };
 
+  public getAccounts = async () => {
+    const accounts: string[] = this.provider!.listAccounts();
+    return accounts;
+  }
+
   public getWeb3 = async () => {
-    return (await this.provider) as IWeb3Provider;
+    return (this.provider) as EthereumClient;
+  };
+
+  public getSigner = async () => {
+    return (this.signer) as EthereumSigner;
   };
 
   public getNetwork = async () => {
-    const network = await this.provider?.getNetwork();
+    const network = await this.provider!.getNetwork();
     return network;
   }
 
@@ -66,19 +84,19 @@ export class Web3 {
   };
 
   public getTxStatus = async (address: string) => {
-    const endpoint = ``;
+    const endpoint = address;
     const response = await fetch(endpoint);
     return await response.json();
   }
 
   public getTxStatusByProxy = async (proxyAddress: string) => {
-    const endpoint = ``;
+    const endpoint = proxyAddress;
     const response = await fetch(endpoint);
     return await response.json();
   }
 
   public getContract = async (address: string, abi: any) => {
-    const contract = new Contract(address, abi, this.provider);
+    const contract = new Contract(address, abi, this.provider! as EthereumClient);
     return contract;
   }
 
