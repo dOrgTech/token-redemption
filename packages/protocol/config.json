@@ -1,0 +1,33 @@
+{
+  "rinkeby": {
+    "StableRedemption": {
+      "owner": "0xb90E873d8F959F36Dd40afa7F4E30C10907Ae8dA",
+      "inputToken": "0x8E11217a3E41B352174041DB83693F90BDB43941",
+      "redemptionTokens": [
+        "0xec11d004548C393de05Cc91eCA3eC411F0DE0dFb",
+        "0xA7F42De18799F62718fB80FCea59cC2713c45412",
+        "0x97D570eA0320946AF6BA7f8B40840947a228f6Bf",
+        "0x71144d684f4C3F0cBA08aEe4FE1945C30a4CF631"
+      ]
+    },
+    "StakingReward": {
+      "owner": "0xb90E873d8F959F36Dd40afa7F4E30C10907Ae8dA",
+      "token": "?",
+      "apr": "10000"
+    },
+    "TestERC20": {
+      "owner": "0xb90E873d8F959F36Dd40afa7F4E30C10907Ae8dA",
+      "name": "dOrgTest",
+      "symbol": "DORGT",
+      "decimals": 18
+    }
+  },
+  "mainnet": {
+    "TestERC20": {
+      "owner": "0xb90E873d8F959F36Dd40afa7F4E30C10907Ae8dA",
+      "name": "dOrgTest",
+      "symbol": "DORGT",
+      "decimals": 18
+    }
+  }
+}

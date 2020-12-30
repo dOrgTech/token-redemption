@@ -23,15 +23,18 @@ async function main() {
       log[contract] = { address, tx }
     );
 
-    await sc.initialize(
-      ...config
-    );
+    if(contract === 'StableRedemption') {
+      await sc.initialize(config.owner, config.inputToken, config.redemptionTokens)
+    } else if(contract === 'StakingReward') {
+      await sc.initialize(config.owner, config.token, config.apr)
+    };
 
     log[contract].initializeParams = {
       ...config
     };
 
     logDeployment(log, contract);
+    console.log(`Succesfully deployed: ${contract} at address: ${log[contract].address}`);
   }
 }
 

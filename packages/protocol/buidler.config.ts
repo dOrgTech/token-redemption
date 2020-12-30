@@ -9,7 +9,7 @@ usePlugin("buidler-typechain");
 usePlugin("solidity-coverage");
 usePlugin("@nomiclabs/buidler-solhint");
 
-const { 
+const {
   INFURA_API_KEY,
   PRIVATE_KEY,
   ETHERSCAN_API_KEY
