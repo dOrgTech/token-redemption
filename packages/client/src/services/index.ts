@@ -1,7 +1,7 @@
 import StableRedemption from "@dorgtech/dorg-token-contracts/artifacts/StableRedemption.json";
 import ERC20 from "@dorgtech/dorg-token-contracts/artifacts/ERC20.json";
 import Addresses from '@dorgtech/dorg-token-contracts/artifacts/Addresses.json';
-import { Web3 } from "./web3";
+import { Web3, Address } from "./web3";
 
 const getStableRedemptionContract = async (): Promise<any> => {
   const web3 = await Web3.getInstance();
@@ -11,54 +11,15 @@ const getStableRedemptionContract = async (): Promise<any> => {
   return instance;
 }
 
-const getDorgTokenBalance = async (): Promise<any> => {
-  const { inputToken } = Addresses.StableRedemption.initializeParams;
-  const tokenAddress = inputToken;
+const getTokenBalance = async (tokenAddress: Address, account?: Address): Promise<any> => {
   const { abi } = ERC20;
   const web3 = await Web3.getInstance();
-  const accounts = await web3.getAccounts();
+  if(!account) {
+    const accounts = await web3.getAccounts();
+    account = accounts[0];
+  }
   const instance = await web3.getContract(tokenAddress, abi) as any;
-  const balance = await instance.balanceOf(accounts[0]);
-  return balance;
-}
-
-const getUsdcTokenBalance = async (): Promise<any> => {
-  const { redemptionTokens } = Addresses.StableRedemption.initializeParams;
-  const { abi } = ERC20;
-  const web3 = await Web3.getInstance();
-  const { address } = Addresses.StableRedemption;
-  const instance = await web3.getContract(redemptionTokens[0], abi) as any;
-  const balance = await instance.balanceOf(address);
-  return balance;
-}
-
-const getUsdtTokenBalance = async (): Promise<any> => {
-  const { redemptionTokens } = Addresses.StableRedemption.initializeParams;
-  const { abi } = ERC20;
-  const web3 = await Web3.getInstance();
-  const { address } = Addresses.StableRedemption;
-  const instance = await web3.getContract(redemptionTokens[1], abi) as any;
-  const balance = await instance.balanceOf(address);
-  return balance;
-}
-
-const getDaiTokenBalance = async (): Promise<any> => {
-  const { redemptionTokens } = Addresses.StableRedemption.initializeParams;
-  const { abi } = ERC20;
-  const web3 = await Web3.getInstance();
-  const { address } = Addresses.StableRedemption;
-  const instance = await web3.getContract(redemptionTokens[2], abi) as any;
-  const balance = await instance.balanceOf(address);
-  return balance;
-}
-
-const getTusdTokenBalance = async (): Promise<any> => {
-  const { redemptionTokens } = Addresses.StableRedemption.initializeParams;
-  const { abi } = ERC20;
-  const web3 = await Web3.getInstance();
-  const { address } = Addresses.StableRedemption;
-  const instance = await web3.getContract(redemptionTokens[3], abi) as any;
-  const balance = await instance.balanceOf(address);
+  const balance = await instance.balanceOf(account);
   return balance;
 }
 
@@ -78,9 +39,5 @@ export {
   getStableRedemptionContract,
   getSigner,
   getProvider,
-  getDorgTokenBalance,
-  getUsdcTokenBalance,
-  getUsdtTokenBalance,
-  getDaiTokenBalance,
-  getTusdTokenBalance,
+  getTokenBalance,
 };
