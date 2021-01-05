@@ -5,7 +5,7 @@ import { Address, EthereumSigner } from '../services/web3';
 import { getStableRedemptionContract, getSigner, getTokenBalance } from '../services';
 import { Typography, Button, TextField, Dialog, DialogActions, DialogContent,
          DialogContentText, DialogTitle, Container, CssBaseline, makeStyles } from '@material-ui/core/';
-import { daiLogo, usdcLogo, tusdLogo, usdtLogo } from '../assets';
+import { daiLogo, usdcLogo, tusdLogo, usdtLogo, defaultLogo } from '../assets';
 
 //types
 type StableCoin = {
@@ -34,7 +34,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const { redemptionTokens } = Addresses.StableRedemption.initializeParams;
-const stableCoins: StableCoin[] = [
+let stableCoins: StableCoin[] = [
   {
     address: redemptionTokens[0],
     label: 'USDC',
@@ -72,7 +72,7 @@ function MultRedemption(props: props) {
   //User inputToken balance
   const userInputTokenBalance: number = props.inputBalance;
 
-  //Stable Coins amounts to be received
+  //Stable Coins labels array
   const stableCoinLabels: string[] = stableCoins.map((coin) => {
     return coin.label;
   });
@@ -92,10 +92,6 @@ function MultRedemption(props: props) {
       }));
     }
   }
-
-  const scAmountArr: number[] = Object.values(stableAmount).map((values) => {
-    return Number(values);
-  });
 
   //State for balance of tokens in contract
   const [stableContractAmount, setStableContractAmount] = useState(stableCoinLabels.reduce((current: any, item) =>{
@@ -119,9 +115,6 @@ function MultRedemption(props: props) {
     return flag;
   }
 
-  //Sum of all the stableCoins amounts entered by the user
-  const scTotal: number = scAmountArr.reduce(function(a,b) { return a + b; }, 0);
-
   //Check the balance of each stablecoin in the contract.
   const checkStableContractBalances = async (): Promise<any> => {
     const { address } = Addresses.StableRedemption;
@@ -136,6 +129,51 @@ function MultRedemption(props: props) {
     })
   }
 
+  //Sum of all the stableCoins amounts entered by the user
+  const scAmountArr: number[] = Object.values(stableAmount).map((values) => {
+    return Number(values);
+  });
+  const scTotal: number = scAmountArr.reduce(function(a,b) { return a + b; }, 0);
+
+  //Add a new StableCoin to the Client
+  const [newCoin, setNewCoin] = useState({ address: '', label: '', logo: defaultLogo, contractBalance: 0, _amount: 0 });
+
+  const handleNewCoin = (event: any): void => {
+    const { value, id } = event.target;
+    setNewCoin((prevState: any) => ({
+      ...prevState,
+      [id]: value
+    }));
+  }
+
+  //Function that adds a new Stablecoin to the stableCoins array and pushes it to localStorage
+  const addNewCoin = (): void => {
+    let i: number = 0;
+    for (i=0; i<stableCoins.length; i++) {
+      if(stableCoins[i].address === newCoin.address) {
+        setConfMessage((): string => {
+          return 'Coin is already on the list!';
+        });
+        setOpenNew(false);
+        return undefined;
+      }
+    }
+    stableCoins.push(newCoin);
+    window.localStorage.setItem('StableCoins', JSON.stringify(stableCoins));
+    setConfMessage((): string => {
+      return 'Coin added to the list!';
+    });
+    setOpenNew(false);
+  }
+
+  //Function that checks if there are new Stablecoins in localStorage
+  const checkCoins = () => {
+    const lsStableCoinsArr: StableCoin[] = JSON.parse((window as any).localStorage.getItem('StableCoins'));
+    if(lsStableCoinsArr !== null) {
+      stableCoins = lsStableCoinsArr;
+    }
+  }
+
   //Function to redeem the inputToken for single or multiple stableCoins
   const redeemStable = async (): Promise<any> => {
     const signer: EthereumSigner = await getSigner();
@@ -144,12 +182,9 @@ function MultRedemption(props: props) {
 
     //Stable Coins Arrays final review & setup
     const stableCoinsFinal: StableCoin[] = stableCoins.map((coin) => {
-      coin._amount = Number(stableAmount[coin.label]);
+      coin._amount = stableAmount[coin.label];
       return coin;
     });
-
-    console.log(stableCoinsFinal);
-
     const stableToRedeem: StableCoin[] = stableCoinsFinal.filter((coin) => { return coin._amount > 0 });
     const stableAmounts: BigNumber[] = stableToRedeem.map((coin) => {
       const ten: BigNumber = ethers.BigNumber.from(10);
@@ -173,10 +208,15 @@ function MultRedemption(props: props) {
       StableRedemptionSigned.redeem(stablecoin, amount);
     }
 
-    setOpen(false);
+    setOpenConf(false);
   }
 
   //Messages & effects
+  useEffect(() => {
+    checkCoins();
+    checkStableContractBalances();
+  }, []);
+
   const [confMessage, setConfMessage] = useState('');
   const [stableTotalMessage, setStableTotalMessage] = useState('');
 
@@ -197,21 +237,26 @@ function MultRedemption(props: props) {
     setStableTotalMessage(() => {
       return `Total: ${scTotal}`;
     })
-  }, [scTotal]);
-
-  useEffect(() => {
-    checkStableContractBalances();
-  }, []);
+  }, [scTotal, stableAmount]);
 
   //Material UI Dialog
-  const [open, setOpen] = useState(false);
+  const [openConf, setOpenConf] = useState(false);
+  const [openNew, setOpenNew] = useState(false);
+
+  const handleNewClickOpen = () => {
+    setOpenNew(true);
+  };
+
+  const handleNewClose = () => {
+    setOpenNew(false);
+  };
 
   const handleClickOpen = () => {
-    setOpen(true);
+    setOpenConf(true);
   };
 
   const handleClose = () => {
-    setOpen(false);
+    setOpenConf(false);
   };
 
   return (
@@ -219,7 +264,7 @@ function MultRedemption(props: props) {
       <div>
         {userInputTokenBalance >= scTotal
           && tokensFlag() === false ? stableCoins.map(coin => (
-          <Fragment key={coin.label + ' key'}>
+          <Fragment key={coin.label + ' key'} >
             <CssBaseline />
             <Container maxWidth="sm" >
               <img src={coin.logo} width="50" height="50" alt=""/>
@@ -235,7 +280,7 @@ function MultRedemption(props: props) {
             </Container>
           </Fragment>
         )): stableCoins.map(coin => (
-          <Fragment key={coin.label + ' key'}>
+          <Fragment key={coin.label + ' key'} >
             <CssBaseline />
             <Container maxWidth="sm" >
               <img src={coin.logo} width="50" height="50" alt=""/>
@@ -254,6 +299,65 @@ function MultRedemption(props: props) {
         )) }
       </div>
       <div>
+        <Container maxWidth="sm" >
+        <Button variant="contained" color="primary" onClick={handleNewClickOpen} style={{ float: "right" }} title='Add a new StableCoin'> + </Button>
+        </Container>
+        <Dialog
+        open={openNew}
+        onClose={handleNewClose}
+        aria-labelledby="new-stableCoin"
+        aria-describedby="new-stableCoin-information">
+        <DialogTitle id="new-stableCoin">{"New Stablecoin information:"}</DialogTitle>
+        <DialogContent>
+            <Container maxWidth="sm" >
+              {ethers.utils.isAddress(newCoin.address) === false ? (
+              <TextField
+                error
+                id="address"
+                label="Enter Stablecoin's address"
+                value={newCoin.address}
+                onChange={handleNewCoin}
+                helperText="Ex. 0x8Ef7c7d047860525B58AFD676EFE90F040c4Beb8"
+                variant="outlined"
+              />):
+              <TextField
+                id="address"
+                label="Enter Stablecoin's address"
+                value={newCoin.address}
+                onChange={handleNewCoin}
+                helperText="Ex. 0x8Ef7c7d047860525B58AFD676EFE90F040c4Beb8"
+                variant="outlined"
+              /> }
+            </Container>
+            <br></br>
+            <Container maxWidth="sm" >
+              <TextField
+                id="label"
+                label="Enter Stablecoin's label"
+                value={newCoin.label}
+                onChange={handleNewCoin}
+                helperText="Ex. DAI, USDC, ETH"
+                variant="outlined"
+              />
+            </Container>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleNewClose} color="primary">
+            Cancel
+          </Button>
+          {ethers.utils.isAddress(newCoin.address) === false ?
+          <Button onClick={addNewCoin} color="primary" disabled>
+            Add
+          </Button> :
+          <Button onClick={addNewCoin} color="primary" autoFocus>
+            Add
+          </Button>}
+        </DialogActions>
+        </Dialog>
+      </div>
+      <br></br>
+      <br></br>
+      <div>
         <Typography>{stableTotalMessage}</Typography>
       </div>
       <div>
@@ -263,13 +367,13 @@ function MultRedemption(props: props) {
           <div>
             <Button variant="contained" color="primary" onClick={handleClickOpen}> Redeem </Button>
             <Dialog
-            open={open}
+            open={openConf}
             onClose={handleClose}
-            aria-labelledby="alert-dialog-title"
-            aria-describedby="alert-dialog-description">
-            <DialogTitle id="alert-dialog-title">{"Are you sure you want to redeem?"}</DialogTitle>
+            aria-labelledby="confirm-Redeem"
+            aria-describedby="dialog-to-confirm-your-transaction">
+            <DialogTitle id="confirm-redeem">{"Are you sure you want to redeem?"}</DialogTitle>
             <DialogContent>
-              <DialogContentText id="alert-dialog-description">
+              <DialogContentText id="dialog-to-confirm-your-transaction">
                 {confMessage}
               </DialogContentText>
             </DialogContent>
