@@ -5,7 +5,7 @@ import { Address, EthereumSigner } from '../services/web3';
 import { getStableRedemptionContract, getSigner, getTokenBalance } from '../services';
 import { Typography, Button, TextField, Dialog, DialogActions, DialogContent,
          DialogContentText, DialogTitle, Container, CssBaseline, makeStyles, Box } from '@material-ui/core/';
-import { daiLogo, usdcLogo, tusdLogo, usdtLogo, defaultLogo } from '../assets';
+import { daiLogo, usdcLogo, tusdLogo, usdtLogo, defaultLogo, infoIcon } from '../assets';
 
 //types
 type StableCoin = {
@@ -283,7 +283,7 @@ function MultRedemption(props: props) {
                   helperText=""
                   variant="outlined"
                 />
-                <Typography variant="overline" title={coin.label + ' balance available in contract'}>{coin.contractBalance}</Typography>
+                <Typography variant="overline" title={coin.label + ' balance available in contract'}>{coin.contractBalance}<img src={infoIcon} width="10" height="10" alt=""/></Typography>
               </Container>
             </Fragment>
           ))}
