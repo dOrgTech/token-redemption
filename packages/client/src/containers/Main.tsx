@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { getTokenBalance } from '../services';
 import Addresses from '@dorgtech/dorg-token-contracts/artifacts/Addresses.json';
 import { ethers } from 'ethers';
-import { makeStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
+import { makeStyles, Typography, Container, Box } from '@material-ui/core/';
 import { MultRedemption } from './'
 
 const useStyles = makeStyles((theme) => ({
   root: {
     '& > *': {
       margin: theme.spacing(1),
+      padding: '0 30px',
     },
   },
 }));
@@ -40,11 +40,15 @@ function Main() {
   const classes = useStyles();
 
   return (
-    <div className={classes.root}>
-      <Typography variant="h5">dOrg Token Redemption</Typography>
-      <Typography variant="body2">balance: {inputBalance} DORG</Typography>
+    <Container className={classes.root}>
+      <Box display="flex" justifyContent="center" m={1} p={1}>
+        <Typography variant="h5">dOrg Token Redemption</Typography>
+      </Box>
+      <Box display="flex" justifyContent="center" m={1} p={1}>
+        <Typography variant="body2">balance: {inputBalance} DORG</Typography>
+      </Box>
       <MultRedemption inputBalance={Number(inputBalance)} />
-    </div>
+    </Container>
   );
 }
 

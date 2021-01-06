@@ -4,7 +4,7 @@ import Addresses from '@dorgtech/dorg-token-contracts/artifacts/Addresses.json';
 import { Address, EthereumSigner } from '../services/web3';
 import { getStableRedemptionContract, getSigner, getTokenBalance } from '../services';
 import { Typography, Button, TextField, Dialog, DialogActions, DialogContent,
-         DialogContentText, DialogTitle, Container, CssBaseline, makeStyles } from '@material-ui/core/';
+         DialogContentText, DialogTitle, Container, CssBaseline, makeStyles, Box } from '@material-ui/core/';
 import { daiLogo, usdcLogo, tusdLogo, usdtLogo, defaultLogo } from '../assets';
 
 //types
@@ -24,6 +24,7 @@ const useStyles = makeStyles((theme) => ({
   root: {
     '& > *': {
       margin: theme.spacing(1),
+      justify: "flex",
     },
     '& .MuiTextField-root': {
       margin: theme.spacing(1),
@@ -187,9 +188,8 @@ function MultRedemption(props: props) {
     });
     const stableToRedeem: StableCoin[] = stableCoinsFinal.filter((coin) => { return coin._amount > 0 });
     const stableAmounts: BigNumber[] = stableToRedeem.map((coin) => {
-      const ten: BigNumber = ethers.BigNumber.from(10);
-      const coinBigNumber: BigNumber = ethers.BigNumber.from(coin._amount);
-      return coinBigNumber.mul(ten.pow(18));
+      const amount = String(Number(coin._amount) * (10 ** 18));
+      return ethers.BigNumber.from(amount);
     });
     const stableTokens: Address[] = stableToRedeem.map((coin) => {
       return coin.address;
@@ -259,138 +259,110 @@ function MultRedemption(props: props) {
     setOpenConf(false);
   };
 
+  //errorCheck
+  const errorCoins = userInputTokenBalance >= scTotal && tokensFlag() === false;
+  const errorNewCoin = ethers.utils.isAddress(newCoin.address) === false;
+  const addNewCoinCheck = ethers.utils.isAddress(newCoin.address) === false;
+  const redeemCheck = userInputTokenBalance >= scTotal && scTotal > 0 && tokensFlag() === false;
+
   return (
-    <form className={classes.root} noValidate autoComplete="off">
-      <div>
-        {userInputTokenBalance >= scTotal
-          && tokensFlag() === false ? stableCoins.map(coin => (
-          <Fragment key={coin.label + ' key'} >
-            <CssBaseline />
-            <Container maxWidth="sm" >
-              <img src={coin.logo} width="50" height="50" alt=""/>
-              <TextField
-                id={coin.label}
-                label={coin.label + ' token amount'}
-                value={stableAmount[coin.label]}
-                onChange={handleAmountChange}
-                helperText=""
-                variant="outlined"
-              />
-              <Typography variant="overline" title={coin.label + ' balance available in contract'}>{coin.contractBalance}</Typography>
+    <Container>
+      <form className={classes.root} noValidate autoComplete="off">
+        <Box justifyContent="center" m={1} p={1}>
+          {stableCoins.map(coin => (
+            <Fragment key={coin.label + ' key'} >
+              <CssBaseline />
+              <Container maxWidth="sm" >
+                <img src={coin.logo} width="50" height="50" alt=""/>
+                <TextField
+                  error={!errorCoins}
+                  id={coin.label}
+                  label={coin.label + ' token amount'}
+                  value={stableAmount[coin.label]}
+                  onChange={handleAmountChange}
+                  helperText=""
+                  variant="outlined"
+                />
+                <Typography variant="overline" title={coin.label + ' balance available in contract'}>{coin.contractBalance}</Typography>
+              </Container>
+            </Fragment>
+          ))}
+        </Box>
+      </form>
+
+      <div className="ActionButtons">
+        <Box justifyContent="center" m={1} p={0}>
+          <Container maxWidth="sm" >
+            <Button variant="contained" color="primary" onClick={handleNewClickOpen} title='Add a new StableCoin'> + </Button>
             </Container>
-          </Fragment>
-        )): stableCoins.map(coin => (
-          <Fragment key={coin.label + ' key'} >
-            <CssBaseline />
-            <Container maxWidth="sm" >
-              <img src={coin.logo} width="50" height="50" alt=""/>
-              <TextField
-                error
-                id={coin.label}
-                label={coin.label + ' token amount'}
-                value={stableAmount[coin.label]}
-                onChange={handleAmountChange}
-                helperText=""
-                variant="outlined"
-              />
-              <Typography variant="overline" title={coin.label + ' balance available in contract'}>{coin.contractBalance}</Typography>
-            </Container>
-          </Fragment>
-        )) }
-      </div>
-      <div>
-        <Container maxWidth="sm" >
-        <Button variant="contained" color="primary" onClick={handleNewClickOpen} style={{ float: "right" }} title='Add a new StableCoin'> + </Button>
-        </Container>
-        <Dialog
-        open={openNew}
-        onClose={handleNewClose}
-        aria-labelledby="new-stableCoin"
-        aria-describedby="new-stableCoin-information">
-        <DialogTitle id="new-stableCoin">{"New Stablecoin information:"}</DialogTitle>
-        <DialogContent>
-            <Container maxWidth="sm" >
-              {ethers.utils.isAddress(newCoin.address) === false ? (
-              <TextField
-                error
-                id="address"
-                label="Enter Stablecoin's address"
-                value={newCoin.address}
-                onChange={handleNewCoin}
-                helperText="Ex. 0x8Ef7c7d047860525B58AFD676EFE90F040c4Beb8"
-                variant="outlined"
-              />):
-              <TextField
-                id="address"
-                label="Enter Stablecoin's address"
-                value={newCoin.address}
-                onChange={handleNewCoin}
-                helperText="Ex. 0x8Ef7c7d047860525B58AFD676EFE90F040c4Beb8"
-                variant="outlined"
-              /> }
-            </Container>
-            <br></br>
-            <Container maxWidth="sm" >
-              <TextField
-                id="label"
-                label="Enter Stablecoin's label"
-                value={newCoin.label}
-                onChange={handleNewCoin}
-                helperText="Ex. DAI, USDC, ETH"
-                variant="outlined"
-              />
-            </Container>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleNewClose} color="primary">
-            Cancel
-          </Button>
-          {ethers.utils.isAddress(newCoin.address) === false ?
-          <Button onClick={addNewCoin} color="primary" disabled>
-            Add
-          </Button> :
-          <Button onClick={addNewCoin} color="primary" autoFocus>
-            Add
-          </Button>}
-        </DialogActions>
-        </Dialog>
-      </div>
-      <br></br>
-      <br></br>
-      <div>
-        <Typography>{stableTotalMessage}</Typography>
-      </div>
-      <div>
-        {userInputTokenBalance >= scTotal
-         && scTotal > 0
-         && tokensFlag() === false ?
-          <div>
-            <Button variant="contained" color="primary" onClick={handleClickOpen}> Redeem </Button>
             <Dialog
-            open={openConf}
-            onClose={handleClose}
-            aria-labelledby="confirm-Redeem"
-            aria-describedby="dialog-to-confirm-your-transaction">
-            <DialogTitle id="confirm-redeem">{"Are you sure you want to redeem?"}</DialogTitle>
+            open={openNew}
+            onClose={handleNewClose}
+            aria-labelledby="new-stableCoin"
+            aria-describedby="new-stableCoin-information">
+            <DialogTitle id="new-stableCoin">{"New Stablecoin information:"}</DialogTitle>
             <DialogContent>
-              <DialogContentText id="dialog-to-confirm-your-transaction">
-                {confMessage}
-              </DialogContentText>
+                <Container maxWidth="sm" >
+                  <TextField
+                    error={errorNewCoin}
+                    id="address"
+                    label="Enter Stablecoin's address"
+                    value={newCoin.address}
+                    onChange={handleNewCoin}
+                    helperText="Ex. 0x8Ef7c7d047860525B58AFD676EFE90F040c4Beb8"
+                    variant="outlined"
+                  />
+                </Container>
+                <br></br>
+                <Container maxWidth="sm" >
+                  <TextField
+                    id="label"
+                    label="Enter Stablecoin's label"
+                    value={newCoin.label}
+                    onChange={handleNewCoin}
+                    helperText="Ex. DAI, USDC, ETH"
+                    variant="outlined"
+                  />
+                </Container>
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleClose} color="primary">
+              <Button onClick={handleNewClose} color="primary">
                 Cancel
               </Button>
-              <Button onClick={redeemStable} color="primary" autoFocus>
-                Confirm
+              <Button onClick={addNewCoin} color="primary" disabled={addNewCoinCheck}>
+                Add
               </Button>
             </DialogActions>
             </Dialog>
-        </div>
-           :
-          <Button variant="contained" disabled> Redeem </Button>}
-        </div>
-    </form>
+        </Box>
+        <Box display="flex" justifyContent="center">
+            <Typography>{stableTotalMessage}</Typography>
+        </Box>
+        <Box display="flex" justifyContent="center">
+          <Button variant="contained" color="primary" onClick={handleClickOpen} disabled={!redeemCheck}> Redeem </Button>
+          <Dialog
+          open={openConf}
+          onClose={handleClose}
+          aria-labelledby="confirm-Redeem"
+          aria-describedby="dialog-to-confirm-your-transaction">
+          <DialogTitle id="confirm-redeem">{"Are you sure you want to redeem?"}</DialogTitle>
+          <DialogContent>
+            <DialogContentText id="dialog-to-confirm-your-transaction">
+              {confMessage}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose} color="primary">
+              Cancel
+            </Button>
+            <Button onClick={redeemStable} color="primary" autoFocus>
+              Confirm
+            </Button>
+          </DialogActions>
+          </Dialog>
+        </Box>
+      </div>
+    </Container>
 
   );
 }
