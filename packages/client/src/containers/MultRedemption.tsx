@@ -1,20 +1,13 @@
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ethers, Contract, BigNumber, Signer } from 'ethers';
 import Addresses from '@dorgtech/dorg-token-contracts/artifacts/Addresses.json';
 import { Address, EthereumSigner } from '../services/web3';
+import { bigNumberifyAmounts, StableCoin } from '../utils'
 import { getStableRedemptionContract, getSigner, getTokenBalance } from '../services';
 import { Typography, Button, TextField, Dialog, DialogActions, DialogContent,
-         DialogContentText, DialogTitle, Container, CssBaseline, makeStyles, Box } from '@material-ui/core/';
+         DialogContentText, DialogTitle, Container, makeStyles, Box } from '@material-ui/core/';
 import { daiLogo, usdcLogo, tusdLogo, usdtLogo, defaultLogo, infoIcon } from '../assets';
 
-//types
-type StableCoin = {
-  address: Address,
-  label: string,
-  logo?: string,
-  contractBalance: number,
-  _amount: number
-}
 type props = {
   inputBalance: number;
 }
@@ -152,6 +145,7 @@ function MultRedemption(props: props) {
     let i: number = 0;
     for (i=0; i<stableCoins.length; i++) {
       if(stableCoins[i].address === newCoin.address) {
+        setNewCoin({ address: '', label: '', logo: defaultLogo, contractBalance: 0, _amount: 0 })
         setConfMessage((): string => {
           return 'Coin is already on the list!';
         });
@@ -161,6 +155,7 @@ function MultRedemption(props: props) {
     }
     stableCoins.push(newCoin);
     window.localStorage.setItem('StableCoins', JSON.stringify(stableCoins));
+    setNewCoin({ address: '', label: '', logo: defaultLogo, contractBalance: 0, _amount: 0 })
     setConfMessage((): string => {
       return 'Coin added to the list!';
     });
@@ -187,10 +182,7 @@ function MultRedemption(props: props) {
       return coin;
     });
     const stableToRedeem: StableCoin[] = stableCoinsFinal.filter((coin) => { return coin._amount > 0 });
-    const stableAmounts: BigNumber[] = stableToRedeem.map((coin) => {
-      const amount = String(Number(coin._amount) * (10 ** 18));
-      return ethers.BigNumber.from(amount);
-    });
+    const stableAmounts: BigNumber[] = await bigNumberifyAmounts(stableToRedeem);
     const stableTokens: Address[] = stableToRedeem.map((coin) => {
       return coin.address;
     });
@@ -199,13 +191,25 @@ function MultRedemption(props: props) {
       // Amounts calculation
       if(stableTokens.length === stableAmounts.length) {
 
-        StableRedemptionSigned.redeemMulti(stableTokens, stableAmounts);
+        StableRedemptionSigned.redeemMulti(stableTokens, stableAmounts)
+          .then(() => {
+            setStableAmount(stableCoinLabels.reduce((current: any, item) =>{
+              current[item] = '';
+              return current;
+            }, {}));
+          })
       }
     } else if(stableToRedeem.length === 1 && stableAmounts.length === 1) {
       const stablecoin: Address = stableToRedeem[0].address;
       const amount: BigNumber = stableAmounts[0];
 
-      StableRedemptionSigned.redeem(stablecoin, amount);
+      StableRedemptionSigned.redeem(stablecoin, amount)
+        .then(() => {
+          setStableAmount(stableCoinLabels.reduce((current: any, item) =>{
+            current[item] = '';
+            return current;
+          }, {}));
+        })
     }
 
     setOpenConf(false);
@@ -270,8 +274,6 @@ function MultRedemption(props: props) {
       <form className={classes.root} noValidate autoComplete="off">
         <Box justifyContent="center" m={1} p={1}>
           {stableCoins.map(coin => (
-            <Fragment key={coin.label + ' key'} >
-              <CssBaseline />
               <Container maxWidth="sm" >
                 <img src={coin.logo} width="50" height="50" alt=""/>
                 <TextField
@@ -281,11 +283,9 @@ function MultRedemption(props: props) {
                   value={stableAmount[coin.label]}
                   onChange={handleAmountChange}
                   helperText=""
-                  variant="outlined"
-                />
+                  variant="outlined"/>
                 <Typography variant="overline" title={coin.label + ' balance available in contract'}>{coin.contractBalance}<img src={infoIcon} width="10" height="10" alt=""/></Typography>
               </Container>
-            </Fragment>
           ))}
         </Box>
       </form>
@@ -293,7 +293,9 @@ function MultRedemption(props: props) {
       <div className="ActionButtons">
         <Box justifyContent="center" m={1} p={0}>
           <Container maxWidth="sm" >
-            <Button variant="contained" color="primary" onClick={handleNewClickOpen} title='Add a new StableCoin'> + </Button>
+            <Box justifyContent="center" p={1}>
+              <Button variant="contained" color="primary" onClick={handleNewClickOpen} title='Add a new StableCoin'> + </Button>
+            </Box>
             </Container>
             <Dialog
             open={openNew}
@@ -310,8 +312,7 @@ function MultRedemption(props: props) {
                     value={newCoin.address}
                     onChange={handleNewCoin}
                     helperText="Ex. 0x8Ef7c7d047860525B58AFD676EFE90F040c4Beb8"
-                    variant="outlined"
-                  />
+                    variant="outlined"/>
                 </Container>
                 <br></br>
                 <Container maxWidth="sm" >
@@ -321,8 +322,7 @@ function MultRedemption(props: props) {
                     value={newCoin.label}
                     onChange={handleNewCoin}
                     helperText="Ex. DAI, USDC, ETH"
-                    variant="outlined"
-                  />
+                    variant="outlined"/>
                 </Container>
             </DialogContent>
             <DialogActions>

@@ -31,8 +31,8 @@ function Main() {
   // provider account and updates the "inputBalance" state.
   const checkBalance = async (): Promise<any> => {
     const { inputToken } = Addresses.StableRedemption.initializeParams;
-    const balance = await getTokenBalance(inputToken);
-    const balanceRounded = (Math.round(Number(ethers.utils.formatEther(balance)) * 100) / 100).toFixed(3);
+    const balance: number = await getTokenBalance(inputToken);
+    const balanceRounded: string = (Math.round(Number(ethers.utils.formatEther(balance)) * 100) / 100).toFixed(2);
 
     setInputBalance(balanceRounded);
   }
@@ -45,7 +45,7 @@ function Main() {
         <Typography variant="h5">dOrg Token Redemption</Typography>
       </Box>
       <Box display="flex" justifyContent="center" m={1} p={1}>
-        <Typography variant="body2">balance: {inputBalance} DORG</Typography>
+        <Typography variant="body2">Your balance: {inputBalance} DORG</Typography>
       </Box>
       <MultRedemption inputBalance={Number(inputBalance)} />
     </Container>

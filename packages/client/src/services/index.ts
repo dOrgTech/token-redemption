@@ -1,5 +1,5 @@
 import StableRedemption from "@dorgtech/dorg-token-contracts/artifacts/StableRedemption.json";
-import ERC20 from "@dorgtech/dorg-token-contracts/artifacts/ERC20.json";
+import ERC20 from "@dorgtech/dorg-token-contracts/artifacts/TestERC20.json";
 import Addresses from '@dorgtech/dorg-token-contracts/artifacts/Addresses.json';
 import { Web3, Address } from "./web3";
 
@@ -23,6 +23,14 @@ const getTokenBalance = async (tokenAddress: Address, account?: Address): Promis
   return balance;
 }
 
+const getTokenDecimals = async (tokenAddress: Address): Promise<any> => {
+  const { abi } = ERC20;
+  const web3 = await Web3.getInstance();
+  const instance = await web3.getContract(tokenAddress, abi);
+  const decimals = await instance.decimals();
+  return decimals;
+}
+
 const getSigner = async (): Promise<any> => {
   const web3 = await Web3.getInstance();
   const signer = web3.getSigner();
@@ -40,4 +48,5 @@ export {
   getSigner,
   getProvider,
   getTokenBalance,
+  getTokenDecimals,
 };
