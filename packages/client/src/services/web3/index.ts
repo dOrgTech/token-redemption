@@ -35,15 +35,20 @@ export class Web3 {
   public signer: EthereumSigner | null = null;
 
   private async initialize() {
-    try {
-      // Use MetaMask provider IF user has metamask downloaded
-      await (window as any).ethereum.enable();
-      this.provider = new Web3Provider((window as any).ethereum);
-      //console.log('this.provider', this.provider)
-      this.signer = this.provider!.getSigner();
-      // console.log("this.signer, this.signer?.getGasPrice()", this.signer?.getGasPrice())
-    } catch (error) {
-      console.log('Error instanciating Web3 Class', error)
+
+    if ((window as any).web3 !== undefined) {
+      try {
+        // Use MetaMask provider IF user has metamask downloaded
+        await (window as any).ethereum.enable();
+        this.provider = new Web3Provider((window as any).ethereum);
+        //console.log('this.provider', this.provider)
+        this.signer = this.provider!.getSigner();
+        // console.log("this.signer, this.signer?.getGasPrice()", this.signer?.getGasPrice())
+      } catch (error) {
+        console.log('Error instanciating Web3 Class', error)
+      }
+    } else {
+        return undefined;
     }
   }
 

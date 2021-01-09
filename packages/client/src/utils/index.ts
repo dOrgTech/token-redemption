@@ -1,7 +1,8 @@
-import { bigNumberifyAmounts, StableCoin } from './helpers'
+import { bigNumberifyAmounts, bigNumberifyAmount, StableCoin } from './helpers'
 
 export {
   bigNumberifyAmounts,
+  bigNumberifyAmount,
 }
 
 export type {

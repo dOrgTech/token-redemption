@@ -43,10 +43,17 @@ const getProvider = async (): Promise<any> => {
   return provider;
 }
 
+const getProviderSelectedAddress = async (): Promise<any> => {
+  const web3 = await Web3.getInstance();
+  const accounts = await web3.getAccounts();
+  return accounts[0];
+}
+
 export {
   getStableRedemptionContract,
   getSigner,
   getProvider,
   getTokenBalance,
   getTokenDecimals,
+  getProviderSelectedAddress,
 };

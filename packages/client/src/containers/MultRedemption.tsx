@@ -3,16 +3,22 @@ import { ethers, Contract, BigNumber, Signer } from 'ethers';
 import Addresses from '@dorgtech/dorg-token-contracts/artifacts/Addresses.json';
 import { Address, EthereumSigner } from '../services/web3';
 import { bigNumberifyAmounts, StableCoin } from '../utils'
-import { getStableRedemptionContract, getSigner, getTokenBalance } from '../services';
+import { getStableRedemptionContract, getSigner, getTokenBalance, getTokenDecimals } from '../services';
 import { Typography, Button, TextField, Dialog, DialogActions, DialogContent,
-         DialogContentText, DialogTitle, Container, makeStyles, Box } from '@material-ui/core/';
+         DialogContentText, DialogTitle, Container, makeStyles, Box, Snackbar } from '@material-ui/core/';
+import MuiAlert from '@material-ui/lab/Alert';
 import { daiLogo, usdcLogo, tusdLogo, usdtLogo, defaultLogo, infoIcon } from '../assets';
+import { approveDORG } from '../utils/allowances'
 
 type props = {
   inputBalance: number;
 }
 
 //Material UI
+function Alert(props: any) {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
+
 const useStyles = makeStyles((theme) => ({
   root: {
     '& > *': {
@@ -23,6 +29,10 @@ const useStyles = makeStyles((theme) => ({
       margin: theme.spacing(1),
       width: 300,
       height: 60,
+    },
+    width: '100%',
+    '& > * + *': {
+      marginTop: theme.spacing(2),
     },
   },
 }));
@@ -145,21 +155,19 @@ function MultRedemption(props: props) {
     let i: number = 0;
     for (i=0; i<stableCoins.length; i++) {
       if(stableCoins[i].address === newCoin.address) {
-        setNewCoin({ address: '', label: '', logo: defaultLogo, contractBalance: 0, _amount: 0 })
-        setConfMessage((): string => {
-          return 'Coin is already on the list!';
-        });
         setOpenNew(false);
+        setSnackMessage(`${newCoin.label} stablecoin is already on the list!`)
+        handleSnackClick('warning')
+        setNewCoin({ address: '', label: '', logo: defaultLogo, contractBalance: 0, _amount: 0 })
         return undefined;
       }
     }
     stableCoins.push(newCoin);
     window.localStorage.setItem('StableCoins', JSON.stringify(stableCoins));
-    setNewCoin({ address: '', label: '', logo: defaultLogo, contractBalance: 0, _amount: 0 })
-    setConfMessage((): string => {
-      return 'Coin added to the list!';
-    });
     setOpenNew(false);
+    setSnackMessage(`${newCoin.label} stablecoin successfully added to the list!`)
+    handleSnackClick('success');
+    setNewCoin({ address: '', label: '', logo: defaultLogo, contractBalance: 0, _amount: 0 })
   }
 
   //Function that checks if there are new Stablecoins in localStorage
@@ -170,11 +178,16 @@ function MultRedemption(props: props) {
     }
   }
 
+  const getInputTokenAllowance = async(): Promise<any> => {
+    await approveDORG();
+  };
+
   //Function to redeem the inputToken for single or multiple stableCoins
   const redeemStable = async (): Promise<any> => {
     const signer: EthereumSigner = await getSigner();
     const instance: Contract = await getStableRedemptionContract();
     const StableRedemptionSigned: Contract = instance.connect(signer as Signer);
+    // await approveUSDC();
 
     //Stable Coins Arrays final review & setup
     const stableCoinsFinal: StableCoin[] = stableCoins.map((coin) => {
@@ -190,26 +203,51 @@ function MultRedemption(props: props) {
     if(stableToRedeem.length > 1 && stableAmounts.length > 1) {
       // Amounts calculation
       if(stableTokens.length === stableAmounts.length) {
-
-        StableRedemptionSigned.redeemMulti(stableTokens, stableAmounts)
+      try {
+        await StableRedemptionSigned.redeemMulti(stableTokens, stableAmounts)
           .then(() => {
+            setSnackMessage('Your transaction was sent to Metamask!')
+            handleSnackClick('success');
             setStableAmount(stableCoinLabels.reduce((current: any, item) =>{
               current[item] = '';
               return current;
             }, {}));
           })
+        } catch (err) {
+          if(err.message === 'cannot raise to negative values (fault="cannot raise to negative values", operation="pow", code=NUMERIC_FAULT, version=bignumber/5.0.12)') {
+            const decimalsLimit = await getTokenDecimals(stableTokens[0])
+            setSnackMessage(`You're using an amount of decimals above stablecoin's limit! (Limit: ${decimalsLimit})`)
+            handleSnackClick('error');
+          } else {
+            setSnackMessage(err.message)
+            handleSnackClick('error');
+          }
+        }
       }
     } else if(stableToRedeem.length === 1 && stableAmounts.length === 1) {
       const stablecoin: Address = stableToRedeem[0].address;
       const amount: BigNumber = stableAmounts[0];
+      try {
+        await StableRedemptionSigned.redeem(stablecoin, amount)
+          .then(() => {
+            setSnackMessage('Your transaction was sent to Metamask!')
+            handleSnackClick('success');
+            setStableAmount(stableCoinLabels.reduce((current: any, item) =>{
+              current[item] = '';
+              return current;
+            }, {}))
+          })
+      } catch (err) {
 
-      StableRedemptionSigned.redeem(stablecoin, amount)
-        .then(() => {
-          setStableAmount(stableCoinLabels.reduce((current: any, item) =>{
-            current[item] = '';
-            return current;
-          }, {}));
-        })
+        if(err.message === 'cannot raise to negative values (fault="cannot raise to negative values", operation="pow", code=NUMERIC_FAULT, version=bignumber/5.0.12)') {
+          const decimalsLimit = await getTokenDecimals(stablecoin)
+          setSnackMessage(`You're using an amount of decimals above stablecoin's limit! (Limit: ${decimalsLimit})`)
+          handleSnackClick('error');
+        } else {
+          setSnackMessage(err.message)
+          handleSnackClick('error');
+        }
+      }
     }
 
     setOpenConf(false);
@@ -219,6 +257,7 @@ function MultRedemption(props: props) {
   useEffect(() => {
     checkCoins();
     checkStableContractBalances();
+    getInputTokenAllowance();
   }, []);
 
   const [confMessage, setConfMessage] = useState('');
@@ -239,13 +278,29 @@ function MultRedemption(props: props) {
     });
 
     setStableTotalMessage(() => {
-      return `Total: ${scTotal}`;
+      return `Total tokens: ${scTotal}`;
     })
   }, [scTotal, stableAmount]);
 
   //Material UI Dialog
   const [openConf, setOpenConf] = useState(false);
   const [openNew, setOpenNew] = useState(false);
+  const [openSnack, setOpenSnack] = React.useState(false);
+  const [snackMessage, setSnackMessage] = useState('');
+  const [snackSeverity, setSnackSeverity] = useState('');
+
+  const handleSnackClick = (severity: string) => {
+    setOpenSnack(true);
+    setSnackSeverity(severity);
+  };
+
+  const handleSnackClose = (reason: any) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpenSnack(false);
+  };
 
   const handleNewClickOpen = () => {
     setOpenNew(true);
@@ -270,11 +325,11 @@ function MultRedemption(props: props) {
   const redeemCheck = userInputTokenBalance >= scTotal && scTotal > 0 && tokensFlag() === false;
 
   return (
-    <Container>
+    <Container key="inputs">
       <form className={classes.root} noValidate autoComplete="off">
         <Box justifyContent="center" m={1} p={1}>
           {stableCoins.map(coin => (
-              <Container maxWidth="sm" >
+              <Container key={coin.label} maxWidth="sm" >
                 <img src={coin.logo} width="50" height="50" alt=""/>
                 <TextField
                   error={!errorCoins}
@@ -292,7 +347,7 @@ function MultRedemption(props: props) {
 
       <div className="ActionButtons">
         <Box justifyContent="center" m={1} p={0}>
-          <Container maxWidth="sm" >
+          <Container key="newCoin" maxWidth="sm" >
             <Box justifyContent="center" p={1}>
               <Button variant="contained" color="primary" onClick={handleNewClickOpen} title='Add a new StableCoin'> + </Button>
             </Box>
@@ -304,7 +359,7 @@ function MultRedemption(props: props) {
             aria-describedby="new-stableCoin-information">
             <DialogTitle id="new-stableCoin">{"New Stablecoin information:"}</DialogTitle>
             <DialogContent>
-                <Container maxWidth="sm" >
+                <Container key="newCoin address" maxWidth="sm" >
                   <TextField
                     error={errorNewCoin}
                     id="address"
@@ -315,7 +370,7 @@ function MultRedemption(props: props) {
                     variant="outlined"/>
                 </Container>
                 <br></br>
-                <Container maxWidth="sm" >
+                <Container key="newCoin label" maxWidth="sm" >
                   <TextField
                     id="label"
                     label="Enter Stablecoin's label"
@@ -361,6 +416,13 @@ function MultRedemption(props: props) {
           </DialogActions>
           </Dialog>
         </Box>
+      </div>
+      <div className="Snackbar">
+        <Snackbar open={openSnack} autoHideDuration={6000} onClose={handleSnackClose}>
+          <Alert onClose={handleSnackClose} severity={snackSeverity}>
+            {snackMessage}
+          </Alert>
+        </Snackbar>
       </div>
     </Container>
 
