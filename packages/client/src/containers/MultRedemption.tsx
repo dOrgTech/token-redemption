@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { ethers, Contract, BigNumber, Signer } from 'ethers';
 import Addresses from '@dorgtech/dorg-token-contracts/artifacts/Addresses.json';
 import { Address, EthereumSigner } from '../services/web3';
-import { bigNumberifyAmounts, StableCoin } from '../utils'
+import { bigNumberifyAmounts, approveDORG, StableCoin } from '../utils'
 import { getStableRedemptionContract, getSigner, getTokenBalance, getTokenDecimals } from '../services';
 import { Typography, Button, TextField, Dialog, DialogActions, DialogContent,
          DialogContentText, DialogTitle, Container, makeStyles, Box, Snackbar } from '@material-ui/core/';
 import MuiAlert from '@material-ui/lab/Alert';
 import { daiLogo, usdcLogo, tusdLogo, usdtLogo, defaultLogo, infoIcon } from '../assets';
-import { approveDORG } from '../utils/allowances'
+
 
 type props = {
   inputBalance: number;

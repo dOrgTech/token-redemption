@@ -11,12 +11,12 @@ if((window as any).web3 === undefined) {
     </div>
   );
 } else {
-  return (
-    <div className="App">
-      <Main />
-    </div>
-  );
-}
+    return (
+      <div className="App">
+        <Main />
+      </div>
+    );
+  }
 }
 
 export default App;

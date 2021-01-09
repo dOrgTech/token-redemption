@@ -26,7 +26,6 @@ function Metamask() {
       <Box display="flex" justifyContent="center" m={1} p={1}>
         <Button variant="contained" target="blank" href="https://metamask.io/download.html" color="primary" title='Install Metamask'> Install Metamask </Button>
       </Box>
-
     </Container>
   );
 }
