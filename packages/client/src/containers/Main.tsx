@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getTokenBalance } from '../services';
+import { getTokenBalance, getProviderSelectedAddress } from '../services';
 import Addresses from '@dorgtech/dorg-token-contracts/artifacts/Addresses.json';
 import { ethers } from 'ethers';
 import { makeStyles, Typography, Container, Box } from '@material-ui/core/';
@@ -17,15 +17,24 @@ const useStyles = makeStyles((theme) => ({
 function Main() {
 
   const [inputBalance, setInputBalance] = useState('');
+  const [userAddress, setUserAddress] = useState('')
 
   useEffect(() => {
     const intervalId = setInterval(() => {
       checkBalance();
+      checkAddress();
     },1000)
       return () => {
         clearInterval(intervalId);
       }
-  }, [inputBalance]);
+  }, [inputBalance, userAddress]);
+
+  //This function checks the address selected by the user.
+  const checkAddress = async (): Promise<any> => {
+    const address = await getProviderSelectedAddress();
+
+    setUserAddress(address);
+  }
 
   // This function checks the balance of the current
   // provider account and updates the "inputBalance" state.
@@ -39,11 +48,14 @@ function Main() {
 
   const classes = useStyles();
 
-  
+
   return (
     <Container className={classes.root}>
       <Box display="flex" justifyContent="center" m={1} p={1}>
-        <Typography variant="h5">dOrg Token Redemption</Typography>
+        <Typography variant="h4">dOrg Token Redemption</Typography>
+      </Box>
+      <Box display="flex" justifyContent="center" m={1} p={1}>
+        <Typography variant="body2">{userAddress}</Typography>
       </Box>
       <Box display="flex" justifyContent="center" m={1} p={1}>
         <Typography variant="body2">Your balance: {inputBalance} DORG</Typography>

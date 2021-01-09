@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import { Main, Metamask } from './';
+import { Home, Metamask } from './';
 
 function App() {
 
@@ -13,7 +13,7 @@ if((window as any).web3 === undefined) {
 } else {
     return (
       <div className="App">
-        <Main />
+        <Home />
       </div>
     );
   }
