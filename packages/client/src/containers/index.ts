@@ -3,6 +3,7 @@ import Main from "./Main"
 import MultRedemption from "./MultRedemption"
 import Metamask from "./Metamask"
 import Home from "./Home"
+import StakingReward from "./StakingReward"
 
 export {
   App,
@@ -10,4 +11,5 @@ export {
   MultRedemption,
   Metamask,
   Home,
+  StakingReward,
 }

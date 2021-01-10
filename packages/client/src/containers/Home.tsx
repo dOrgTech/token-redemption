@@ -30,7 +30,7 @@ function Home() {
     return (
       <Container key="main" className={classes.root}>
         <Box display="flex" justifyContent="center" m={1} p={1}>
-          <Typography variant="h4">dOrg Token Redemption</Typography>
+          <Typography variant="h5">dOrg Token Dashboard</Typography>
         </Box>
         <Box display="flex" justifyContent="center" m={1} p={1}>
           <Button variant="contained" color="primary" title='Connect Wallet' onClick={handleConnectWallet}> Connect Wallet </Button>
@@ -42,7 +42,6 @@ function Home() {
       <Main />
     );
   }
-
 
 }
 

@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { getTokenBalance, getProviderSelectedAddress } from '../services';
 import Addresses from '@dorgtech/dorg-token-contracts/artifacts/Addresses.json';
 import { ethers } from 'ethers';
-import { makeStyles, Typography, Container, Box } from '@material-ui/core/';
-import { MultRedemption } from './'
+import { makeStyles, Typography, Container, Box, Button } from '@material-ui/core/';
+import { MultRedemption, StakingReward } from './'
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -46,13 +46,29 @@ function Main() {
     setInputBalance(balanceRounded);
   }
 
+  const [flag, setFlag] = useState(false);
+  const [disabled, setDisabled] = useState(true);
+
+  const handleRedeem = () => {
+    setFlag(false);
+    setDisabled(true);
+  }
+  const handleStake = () => {
+    setFlag(true);
+    setDisabled(false);
+  }
+
   const classes = useStyles();
 
 
   return (
     <Container className={classes.root}>
       <Box display="flex" justifyContent="center" m={1} p={1}>
-        <Typography variant="h4">dOrg Token Redemption</Typography>
+        <Typography variant="h5">dOrg Token Dashboard</Typography>
+      </Box>
+      <Box display="flex" justifyContent="center" m={1} p={1}>
+        <Button variant="contained" color="primary" onClick={handleRedeem} disabled={disabled} title='Redeem Tokens'>Redeem Tokens</Button>
+        <Button variant="contained" color="secondary" onClick={handleStake} disabled={flag} title='Stake Tokens'>Stake Tokens</Button>
       </Box>
       <Box display="flex" justifyContent="center" m={1} p={1}>
         <Typography variant="body2">{userAddress}</Typography>
@@ -60,7 +76,8 @@ function Main() {
       <Box display="flex" justifyContent="center" m={1} p={1}>
         <Typography variant="body2">Your balance: {inputBalance} DORG</Typography>
       </Box>
-      <MultRedemption inputBalance={Number(inputBalance)} />
+      {flag === false ? <MultRedemption inputBalance={Number(inputBalance)} />
+        : <StakingReward inputBalance={Number(inputBalance)} />}
     </Container>
   );
 }

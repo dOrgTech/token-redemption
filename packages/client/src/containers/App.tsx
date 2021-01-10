@@ -2,20 +2,25 @@ import React from 'react';
 import './App.css';
 import { Home, Metamask } from './';
 
-function App() {
+const RenderMetaMask = () => {
+  return (<div className="App">
+    <Metamask />
+  </div>)
+}
 
-if((window as any).web3 === undefined) {
-  return (
+const RenderApp = () => {
+  return(
     <div className="App">
-      <Metamask />
+      <Home />
     </div>
-  );
-} else {
-    return (
-      <div className="App">
-        <Home />
-      </div>
-    );
+  )
+}
+
+function App() {
+  if((window as any).web3 === undefined) {
+    return <RenderMetaMask/>
+  } else {
+    return <RenderApp />
   }
 }
 

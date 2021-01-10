@@ -72,7 +72,6 @@ let stableCoins: StableCoin[] = [
 function MultRedemption(props: props) {
 
   const classes = useStyles();
-  const regexp: RegExp = /^\d*\.?\d*$/;
   //User inputToken balance
   const userInputTokenBalance: number = props.inputBalance;
 
@@ -89,6 +88,7 @@ function MultRedemption(props: props) {
 
   const handleAmountChange = (event: any): void => {
     const { value, id } = event.target;
+    const regexp: RegExp = /^\d*\.?\d*$/;
     if(value === '' || regexp.test(value)) {
       setStableAmount((prevState: any) => ({
         ...prevState,
