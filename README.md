@@ -5,7 +5,7 @@ dOrg internal project for the DORG token.
 | Package | Description |  
 |---------|-------------|  
 | [@dorgtech/dorg-token-contracts](./packages/protocol) | Solidity Contracts |
-| [@dorgtech/dorg-token-ui](./packages/client) | Javascript Client |  
+| [@dorgtech/dorg-token-ui](./packages/client) | Typescript Client |  
 
 ### Prerequisites  
 - `nvm`  
