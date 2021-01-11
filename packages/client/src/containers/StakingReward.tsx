@@ -28,6 +28,10 @@ const useStyles = makeStyles({
   },
 });
 
+function Alert(props: any) {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
+
 type props = {
   inputBalance: number;
 }
@@ -36,19 +40,22 @@ function StakingReward(props: props) {
 
   const classes = useStyles();
 
+  //DORG token balance of the selected address (user).
   const userInputTokenBalance: number = props.inputBalance;
 
-  //getters of the contract
+  //State for each getter of the contract
   const [srApr, setSrApr] = useState('');
   const [rewardsAvailable, setRewardsAvailable] = useState('');
   const [tokensStaked, setTokensStaked] = useState('');
 
+  //Function that fetches all the information needed for the UI from the contract.
   const stakingContractInfo = async (): Promise<any> => {
     const StakingRewardSigned: Contract = await getStakingRewardContractSigned();
     const currentAddress: Address = await getProviderSelectedAddress();
 
     const sApr = ethers.utils.formatEther(await StakingRewardSigned.apr());
-    setSrApr(sApr);
+    const formatsApr = Number(sApr) * (10**16);
+    setSrApr(String(formatsApr));
 
     const sRewardsAvailable = ethers.utils.formatEther(await StakingRewardSigned.rewardsAvailable());
     setRewardsAvailable(sRewardsAvailable);
@@ -59,49 +66,103 @@ function StakingReward(props: props) {
   }
 
   useEffect(() => {
-    stakingContractInfo();
+    const intervalId = setInterval(() => {
+      stakingContractInfo();
+    },1000)
+      return () => {
+        clearInterval(intervalId);
+      }
+  }, []);
+
+  useEffect(() => {
     approveSRDORG();
   }, []);
 
   const stake = async (): Promise<any> => {
     const { token } = Addresses.StakingReward.initializeParams
     const StakingRewardSigned: Contract = await getStakingRewardContractSigned();
-
-
-    StakingRewardSigned.stake(bigNumberifyAmount(Number(userAmount), token));
+    try {
+      await StakingRewardSigned.stake(bigNumberifyAmount(Number(userAmount), token))
+        .then(() => {
+          setSnackMessage('Your transaction was sent to Metamask!')
+          handleSnackClick('success')
+          setUserAmount('')
+        });
+      } catch(err) {
+        setSnackMessage(err.message)
+        handleSnackClick('error');
+      }
   }
 
   const unstake = async (): Promise<any> => {
     const { token } = Addresses.StakingReward.initializeParams
     const StakingRewardSigned: Contract = await getStakingRewardContractSigned();
-
-    StakingRewardSigned.unstake(bigNumberifyAmount(Number(userAmount), token));
+    try {
+      await StakingRewardSigned.unstake(bigNumberifyAmount(Number(userAmount), token))
+        .then(() => {
+          setSnackMessage('Your transaction was sent to Metamask!')
+          handleSnackClick('success')
+          setUserAmount('')
+        });
+      } catch(err) {
+        setSnackMessage(err.message)
+        handleSnackClick('error');
+      }
   }
 
   const unstakeAndClaim = async (): Promise<any> => {
     const { token } = Addresses.StakingReward.initializeParams
     const StakingRewardSigned: Contract = await getStakingRewardContractSigned();
-
-    StakingRewardSigned.unstakeAndClaim(bigNumberifyAmount(Number(userAmount), token));
+    try {
+      await StakingRewardSigned.unstakeAndClaim(bigNumberifyAmount(Number(userAmount), token))
+        .then(() => {
+          setSnackMessage('Your transaction was sent to Metamask!')
+          handleSnackClick('success')
+          setUserAmount('')
+        });
+      } catch(err) {
+        setSnackMessage(err.message)
+        handleSnackClick('error');
+      }
   }
 
   const claimRewards = async (): Promise<any> => {
     const StakingRewardSigned: Contract = await getStakingRewardContractSigned();
-
-    StakingRewardSigned.claimRewards();
+    try {
+      await StakingRewardSigned.claimRewards()
+        .then(() => {
+          setSnackMessage('Your transaction was sent to Metamask!')
+          handleSnackClick('success')
+          setUserAmount('')
+        });
+      } catch(err) {
+        setSnackMessage(err.message)
+        handleSnackClick('error');
+      }
   }
 
   const claimPartialRewards = async (): Promise<any> => {
     const { token } = Addresses.StakingReward.initializeParams
     const StakingRewardSigned: Contract = await getStakingRewardContractSigned();
-
-    StakingRewardSigned.claimPartialRewards(bigNumberifyAmount(Number(userAmount), token));
+    try {
+      await StakingRewardSigned.claimPartialRewards(bigNumberifyAmount(Number(userAmount), token))
+        .then(() => {
+          setSnackMessage('Your transaction was sent to Metamask!')
+          handleSnackClick('success')
+          setUserAmount('')
+        });
+      } catch(err) {
+        setSnackMessage(err.message)
+        handleSnackClick('error');
+      }
   }
 
+  //Array of arrays with each card information.
   const stateArray = [[srApr, 'APR (%)', 'Annual percentage rate.'],
                       [rewardsAvailable, 'Rewards Available', 'Amount of DORG tokens you have earned.'],
                       [tokensStaked, 'DORG Tokens Staked', 'Amount of DORG tokens you have staking.']];
 
+  //Function to render a single card, it returns JSX with the parameters for each card.
   const renderCard = (state: any) => {
     return (
       <Card key={state[1]} className={classes.card}>
@@ -119,6 +180,8 @@ function StakingReward(props: props) {
       </Card>
     )
   }
+
+  //Function to render each card with the parameters inside stateArray (array).
   const renderCards = () => {
     return (
       <Box display="flex" justifyContent="center" m={1} p={1}>
@@ -127,6 +190,7 @@ function StakingReward(props: props) {
     );
   }
 
+  //State to handle the amount the user inputs.
   const [userAmount, setUserAmount] = useState('');
 
   const handleAmountChange = (event: any): void => {
@@ -137,18 +201,46 @@ function StakingReward(props: props) {
     }
   }
 
-  const errorCoins = Number(userAmount) > userInputTokenBalance;
+  // Material UI Snackbar & Messages
+  const [openSnack, setOpenSnack] = React.useState(false);
+  const [snackMessage, setSnackMessage] = useState('');
+  const [snackSeverity, setSnackSeverity] = useState('');
+
+  const handleSnackClick = (severity: string) => {
+    setOpenSnack(true);
+    setSnackSeverity(severity);
+  };
+
+  const handleSnackClose = (reason: any) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpenSnack(false);
+  };
+
+  //errorCheck vars for input/buttons
+  const errorCheck = () => {
+    if(Number(userAmount) > userInputTokenBalance) {
+      if(Number(userAmount) < Number(tokensStaked)) {
+        return false;
+      } else {
+        return true;
+      }
+    }
+  }
+
   const errorButtons = Number(userAmount) > userInputTokenBalance || userAmount === '';
-  const errorUnstake = Number(userAmount) > userInputTokenBalance || userAmount === '' || Number(tokensStaked) === 0 || Number(userAmount) > Number(tokensStaked);
-  const errorUnstakeAndClaim = Number(rewardsAvailable) === 0 || Number(tokensStaked) === 0 || Number(userAmount) > Number(tokensStaked) || userAmount === '' || Number(userAmount) > userInputTokenBalance;
+  const errorUnstake = Number(userAmount) > Number(tokensStaked) || userAmount === '' || Number(tokensStaked) === 0 || Number(userAmount) > Number(tokensStaked);
+  const errorUnstakeAndClaim = Number(rewardsAvailable) === 0 || Number(tokensStaked) === 0 || Number(userAmount) > Number(tokensStaked) || userAmount === '';
   const errorPartialRewards = Number(rewardsAvailable) === 0 || userAmount === '' || Number(userAmount) > userInputTokenBalance;
   const errorClaimRewards = Number(rewardsAvailable) === 0;
 
   return (
     <Container>
-      <Box display="flex" justifyContent="center" p={1}>
+      <Box className="UserInput" display="flex" justifyContent="center" p={1}>
         <TextField
-          error={errorCoins}
+          error={errorCheck()}
           id="input amount"
           label="Enter amount:"
           value={userAmount}
@@ -156,7 +248,7 @@ function StakingReward(props: props) {
           helperText=""
           variant="outlined"/>
       </Box>
-      <Box display="flex" justifyContent="center" m={1} p={1}>
+      <Box className="ActionButtons" display="flex" justifyContent="center" m={1} p={1}>
         <Button variant="contained" color="primary" title='Stake' onClick={stake} disabled={errorButtons}> Stake </Button>
         <Button variant="contained" color="secondary" title='Unstake' onClick={unstake} disabled={errorUnstake}> Unstake </Button>
         <Button variant="contained" color="secondary" title='Unstake and claim' onClick={unstakeAndClaim} disabled={errorUnstakeAndClaim}> Unstake and Claim </Button>
@@ -164,6 +256,14 @@ function StakingReward(props: props) {
         <Button variant="contained" color="primary" title='Claim partial rewards' onClick={claimPartialRewards} disabled={errorPartialRewards}> Claim Partial Rewards </Button>
       </Box>
       {renderCards()}
+
+      <div className="Snackbar">
+        <Snackbar open={openSnack} autoHideDuration={6000} onClose={handleSnackClose}>
+          <Alert onClose={handleSnackClose} severity={snackSeverity}>
+            {snackMessage}
+          </Alert>
+        </Snackbar>
+      </div>
     </Container>
   );
 

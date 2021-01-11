@@ -14,48 +14,26 @@ export type StableCoin = {
 export const bigNumberifyAmounts = async (array: StableCoin[]): Promise<any> => {
   const bigNumberArray = array.map(async (coin) => {
     const tokenDecimals: number = await getTokenDecimals(coin.address);
-    const intAmount: number = Math.trunc(Number(coin._amount))
-    const decimalsAmount: number = Number(coin._amount) - intAmount;
-    if(decimalsAmount > 0) {
-      const deciAmountToInt: string[] = String(coin._amount).split('.');
-      const deciAmount: string = deciAmountToInt[1];
-      const deciLength: number = deciAmount.length
-      //BigNumbers
-      const ten: BigNumber = ethers.BigNumber.from(10);
-      const intBn: BigNumber = ethers.BigNumber.from(intAmount).mul(ten.pow(tokenDecimals));
-      const deciBn: BigNumber = ethers.BigNumber.from(deciAmount).mul(ten.pow(tokenDecimals-deciLength));
-      const amountBn: BigNumber = intBn.add(deciBn)
+    const intAmount: string = String(Math.trunc(Number(coin._amount)));
+    const sAmount: string = String(coin._amount).replace('.', '');
+    //BigNumber
+    const ten: BigNumber = ethers.BigNumber.from(10);
+    const amountBn: BigNumber = ethers.BigNumber.from(sAmount).mul(ten.pow(tokenDecimals-(sAmount.length-intAmount.length)));
 
-      return amountBn;
-  } else {
-      const ten: BigNumber = ethers.BigNumber.from(10);
-      const intBn: BigNumber = ethers.BigNumber.from(intAmount).mul(ten.pow(tokenDecimals));
-
-      return intBn;
-  }
+    return amountBn;
   });
+
   return bigNumberArray;
 }
 
 export const bigNumberifyAmount = async (amount: number, coin: Address): Promise<any> => {
   const tokenDecimals: number = await getTokenDecimals(coin);
-  const intAmount: number = Math.trunc(Number(amount))
-  const decimalsAmount: number = Number(amount) - intAmount;
-  if(decimalsAmount > 0) {
-    const deciAmountToInt: string[] = String(amount).split('.');
-    const deciAmount: string = deciAmountToInt[1];
-    const deciLength: number = deciAmount.length
-    //BigNumbers
-    const ten: BigNumber = ethers.BigNumber.from(10);
-    const intBn: BigNumber = ethers.BigNumber.from(intAmount).mul(ten.pow(tokenDecimals));
-    const deciBn: BigNumber = ethers.BigNumber.from(deciAmount).mul(ten.pow(tokenDecimals-deciLength));
-    const amountBn: BigNumber = intBn.add(deciBn)
+  const intAmount: string = String(Math.trunc(Number(amount)));
+  const sAmount: string = String(amount).replace('.', '');
+  //BigNumber
+  const ten: BigNumber = ethers.BigNumber.from(10);
+  const amountBn: BigNumber = ethers.BigNumber.from(sAmount).mul(ten.pow(tokenDecimals-(sAmount.length-intAmount.length)));
 
-    return amountBn;
-} else {
-    const ten: BigNumber = ethers.BigNumber.from(10);
-    const intBn: BigNumber = ethers.BigNumber.from(intAmount).mul(ten.pow(tokenDecimals));
+  return amountBn;
 
-    return intBn;
-  }
 }
