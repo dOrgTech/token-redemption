@@ -253,26 +253,22 @@ function StakingReward(props: props) {
 
   const handleClickOpen = (event: string) => {
     if(event === 'stake') {
-      setOpenConf(true);
       setDialogTitle('stake')
       setDialogMessage(`${userAmount} DORG`);
     } else if(event === 'unstake') {
-      setOpenConf(true);
       setDialogTitle('unstake')
       setDialogMessage(`${userAmount} DORG`);
     } else if(event === 'unstake and claim') {
-      setOpenConf(true);
       setDialogTitle('unstake and claim')
       setDialogMessage(`Unstake ${userAmount} DORG and claim ${rewardsAvailable} DORG from rewards`);
     } else if(event === 'claim rewards') {
-      setOpenConf(true);
       setDialogTitle('claim rewards')
       setDialogMessage(`${rewardsAvailable} DORG from rewards`);
     } else if(event === 'claim partial rewards') {
-      setOpenConf(true);
       setDialogTitle('claim partial rewards')
       setDialogMessage(`${userAmount} DORG from rewards`);
     }
+    setOpenConf(true);
   };
 
   const handleClose = () => {
