@@ -78,6 +78,7 @@ function StakingReward(props: props) {
     approveSRDORG();
   }, []);
 
+  // Function to interact with the Stake method of the contract
   const stake = async (): Promise<any> => {
     const { token } = Addresses.StakingReward.initializeParams
     const StakingRewardSigned: Contract = await getStakingRewardContractSigned();
@@ -85,15 +86,18 @@ function StakingReward(props: props) {
       await StakingRewardSigned.stake(bigNumberifyAmount(Number(userAmount), token))
         .then(() => {
           setSnackMessage('Your transaction was sent to Metamask!')
+          setOpenConf(false);
           handleSnackClick('success')
           setUserAmount('')
         });
       } catch(err) {
         setSnackMessage(err.message)
+        setOpenConf(false);
         handleSnackClick('error');
       }
   }
 
+  // Function to interact with the Unstake method of the contract
   const unstake = async (): Promise<any> => {
     const { token } = Addresses.StakingReward.initializeParams
     const StakingRewardSigned: Contract = await getStakingRewardContractSigned();
@@ -101,15 +105,18 @@ function StakingReward(props: props) {
       await StakingRewardSigned.unstake(bigNumberifyAmount(Number(userAmount), token))
         .then(() => {
           setSnackMessage('Your transaction was sent to Metamask!')
+          setOpenConf(false);
           handleSnackClick('success')
           setUserAmount('')
         });
       } catch(err) {
         setSnackMessage(err.message)
+        setOpenConf(false);
         handleSnackClick('error');
       }
   }
 
+// Function to interact with the unstakeAndClaim method of the contract
   const unstakeAndClaim = async (): Promise<any> => {
     const { token } = Addresses.StakingReward.initializeParams
     const StakingRewardSigned: Contract = await getStakingRewardContractSigned();
@@ -117,30 +124,36 @@ function StakingReward(props: props) {
       await StakingRewardSigned.unstakeAndClaim(bigNumberifyAmount(Number(userAmount), token))
         .then(() => {
           setSnackMessage('Your transaction was sent to Metamask!')
+          setOpenConf(false);
           handleSnackClick('success')
           setUserAmount('')
         });
       } catch(err) {
         setSnackMessage(err.message)
+        setOpenConf(false);
         handleSnackClick('error');
       }
   }
 
+  // Function to interact with the claimRewards method of the contract
   const claimRewards = async (): Promise<any> => {
     const StakingRewardSigned: Contract = await getStakingRewardContractSigned();
     try {
       await StakingRewardSigned.claimRewards()
         .then(() => {
           setSnackMessage('Your transaction was sent to Metamask!')
+          setOpenConf(false);
           handleSnackClick('success')
           setUserAmount('')
         });
       } catch(err) {
         setSnackMessage(err.message)
+        setOpenConf(false);
         handleSnackClick('error');
       }
   }
 
+  // Function to interact with the claimPartialRewards method of the contract
   const claimPartialRewards = async (): Promise<any> => {
     const { token } = Addresses.StakingReward.initializeParams
     const StakingRewardSigned: Contract = await getStakingRewardContractSigned();
@@ -148,11 +161,13 @@ function StakingReward(props: props) {
       await StakingRewardSigned.claimPartialRewards(bigNumberifyAmount(Number(userAmount), token))
         .then(() => {
           setSnackMessage('Your transaction was sent to Metamask!')
+          setOpenConf(false);
           handleSnackClick('success')
           setUserAmount('')
         });
       } catch(err) {
         setSnackMessage(err.message)
+        setOpenConf(false);
         handleSnackClick('error');
       }
   }
@@ -202,7 +217,10 @@ function StakingReward(props: props) {
   }
 
   // Material UI Snackbar & Messages
-  const [openSnack, setOpenSnack] = React.useState(false);
+  const [dialogTitle, setDialogTitle] = useState('');
+  const [dialogMessage, setDialogMessage] = useState('');
+  const [openSnack, setOpenSnack] = useState(false);
+  const [openConf, setOpenConf] = useState(false);
   const [snackMessage, setSnackMessage] = useState('');
   const [snackSeverity, setSnackSeverity] = useState('');
 
@@ -219,6 +237,48 @@ function StakingReward(props: props) {
     setOpenSnack(false);
   };
 
+  const dialogAction = () => {
+    if(dialogTitle === 'stake') {
+      return stake();
+    } else if(dialogTitle === 'unstake') {
+      return unstake();
+    } else if(dialogTitle === 'unstake and claim') {
+      return unstakeAndClaim();
+    } else if(dialogTitle === 'claim rewards') {
+      return claimRewards();
+    } else if(dialogTitle === 'claim partial rewards') {
+      return claimPartialRewards();
+    }
+  }
+
+  const handleClickOpen = (event: string) => {
+    if(event === 'stake') {
+      setOpenConf(true);
+      setDialogTitle('stake')
+      setDialogMessage(`${userAmount} DORG`);
+    } else if(event === 'unstake') {
+      setOpenConf(true);
+      setDialogTitle('unstake')
+      setDialogMessage(`${userAmount} DORG`);
+    } else if(event === 'unstake and claim') {
+      setOpenConf(true);
+      setDialogTitle('unstake and claim')
+      setDialogMessage(`Unstake ${userAmount} DORG and claim ${rewardsAvailable} DORG from rewards`);
+    } else if(event === 'claim rewards') {
+      setOpenConf(true);
+      setDialogTitle('claim rewards')
+      setDialogMessage(`${rewardsAvailable} DORG from rewards`);
+    } else if(event === 'claim partial rewards') {
+      setOpenConf(true);
+      setDialogTitle('claim partial rewards')
+      setDialogMessage(`${userAmount} DORG from rewards`);
+    }
+  };
+
+  const handleClose = () => {
+    setOpenConf(false);
+  };
+
   //errorCheck vars for input/buttons
   const errorCheck = () => {
     if(Number(userAmount) > userInputTokenBalance) {
@@ -230,10 +290,10 @@ function StakingReward(props: props) {
     }
   }
 
-  const errorButtons = Number(userAmount) > userInputTokenBalance || userAmount === '';
-  const errorUnstake = Number(userAmount) > Number(tokensStaked) || userAmount === '' || Number(tokensStaked) === 0 || Number(userAmount) > Number(tokensStaked);
-  const errorUnstakeAndClaim = Number(rewardsAvailable) === 0 || Number(tokensStaked) === 0 || Number(userAmount) > Number(tokensStaked) || userAmount === '';
-  const errorPartialRewards = Number(rewardsAvailable) === 0 || userAmount === '' || Number(userAmount) > userInputTokenBalance;
+  const errorButtons = Number(userAmount) > userInputTokenBalance || userAmount === '' || userAmount === '0';
+  const errorUnstake = Number(userAmount) > Number(tokensStaked) || userAmount === '' || userAmount === '0' || Number(tokensStaked) === 0 || Number(userAmount) > Number(tokensStaked);
+  const errorUnstakeAndClaim = Number(rewardsAvailable) === 0 || Number(tokensStaked) === 0 || Number(userAmount) > Number(tokensStaked) || userAmount === '' || userAmount === '0';
+  const errorPartialRewards = Number(rewardsAvailable) === 0 || userAmount === '' || userAmount === '0' || Number(userAmount) > userInputTokenBalance || Number(userAmount) > Number(rewardsAvailable);
   const errorClaimRewards = Number(rewardsAvailable) === 0;
 
   return (
@@ -249,13 +309,34 @@ function StakingReward(props: props) {
           variant="outlined"/>
       </Box>
       <Box className="ActionButtons" display="flex" justifyContent="center" m={1} p={1}>
-        <Button variant="contained" color="primary" title='Stake' onClick={stake} disabled={errorButtons}> Stake </Button>
-        <Button variant="contained" color="secondary" title='Unstake' onClick={unstake} disabled={errorUnstake}> Unstake </Button>
-        <Button variant="contained" color="secondary" title='Unstake and claim' onClick={unstakeAndClaim} disabled={errorUnstakeAndClaim}> Unstake and Claim </Button>
-        <Button variant="contained" color="primary" title='Claim rewards' onClick={claimRewards} disabled={errorClaimRewards}> Claim Rewards </Button>
-        <Button variant="contained" color="primary" title='Claim partial rewards' onClick={claimPartialRewards} disabled={errorPartialRewards}> Claim Partial Rewards </Button>
+        <Button variant="contained" color="primary" id="Stake" title='Stake' onClick={() => { handleClickOpen('stake') }} disabled={errorButtons}> Stake </Button>
+        <Button variant="contained" color="secondary" id="Unstake" title='Unstake' onClick={() => { handleClickOpen('unstake') }} disabled={errorUnstake}> Unstake </Button>
+        <Button variant="contained" color="secondary" id="Unstake and claim" title='Unstake and claim' onClick={() => { handleClickOpen('unstake and claim') }} disabled={errorUnstakeAndClaim}> Unstake and Claim </Button>
+        <Button variant="contained" color="primary" id="Claim rewards" title='Claim rewards' onClick={() => { handleClickOpen('claim rewards') }} disabled={errorClaimRewards}> Claim Rewards </Button>
+        <Button variant="contained" color="primary" id="Claim partial rewards" title='Claim partial rewards' onClick={() => { handleClickOpen('claim partial rewards') }} disabled={errorPartialRewards}> Claim Partial Rewards </Button>
       </Box>
       {renderCards()}
+
+      <Dialog
+      open={openConf}
+      onClose={handleClose}
+      aria-labelledby="confirm-dialog"
+      aria-describedby="dialog-to-confirm-your-transaction">
+      <DialogTitle id="confirm-dialog">{`Are you sure you want to ${dialogTitle} ?`}</DialogTitle>
+      <DialogContent>
+        <DialogContentText id="dialog-to-confirm-your-transaction">
+          {dialogMessage}
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleClose} color="primary">
+          Cancel
+        </Button>
+        <Button onClick={dialogAction} color="primary" autoFocus>
+          Confirm
+        </Button>
+      </DialogActions>
+      </Dialog>
 
       <div className="Snackbar">
         <Snackbar open={openSnack} autoHideDuration={6000} onClose={handleSnackClose}>

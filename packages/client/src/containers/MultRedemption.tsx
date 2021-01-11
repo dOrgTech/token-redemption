@@ -285,7 +285,7 @@ function MultRedemption(props: props) {
   //Material UI Dialog
   const [openConf, setOpenConf] = useState(false);
   const [openNew, setOpenNew] = useState(false);
-  const [openSnack, setOpenSnack] = React.useState(false);
+  const [openSnack, setOpenSnack] = useState(false);
   const [snackMessage, setSnackMessage] = useState('');
   const [snackSeverity, setSnackSeverity] = useState('');
 
