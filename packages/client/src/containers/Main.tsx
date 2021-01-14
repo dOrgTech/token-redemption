@@ -39,11 +39,16 @@ function Main() {
   // This function checks the balance of the current
   // provider account and updates the "inputBalance" state.
   const checkBalance = async (): Promise<any> => {
-    const { inputToken } = Addresses.StableRedemption.initializeParams;
-    const balance: number = await getTokenBalance(inputToken);
-    const balanceRounded: string = (Math.round(Number(ethers.utils.formatEther(balance)) * 100) / 100).toFixed(2);
+    try {
+      const { inputToken } = Addresses.StableRedemption.initializeParams;
+      const balance: number = await getTokenBalance(inputToken);
+      const balanceRounded: string = (Math.round(Number(ethers.utils.formatEther(balance)) * 100) / 100).toFixed(2);
 
-    setInputBalance(balanceRounded);
+      setInputBalance(balanceRounded);
+    } catch(err) {
+      console.log(err.message)
+      setInputBalance('')
+    }
   }
 
   const [flag, setFlag] = useState(false);

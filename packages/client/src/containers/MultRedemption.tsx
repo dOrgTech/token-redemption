@@ -123,13 +123,20 @@ function MultRedemption(props: props) {
   const checkStableContractBalances = async (): Promise<any> => {
     const { address } = Addresses.StableRedemption;
     stableCoins.map(async (coin) => {
-      const balance = await getTokenBalance(coin.address, address);
-      const balanceRounded = (Math.round(Number(ethers.utils.formatEther(balance)) * 100) / 100).toFixed(2);
-      coin.contractBalance = Number(balanceRounded);
-      setStableContractAmount((prevState: any) => ({
-        ...prevState,
-        [coin.label]: balanceRounded
-      }));
+      try {
+        const balance = await getTokenBalance(coin.address, address);
+        const balanceRounded = (Math.round(Number(ethers.utils.formatEther(balance)) * 100) / 100).toFixed(2);
+        coin.contractBalance = Number(balanceRounded);
+        setStableContractAmount((prevState: any) => ({
+          ...prevState,
+          [coin.label]: balanceRounded
+        }));
+      } catch(err) {
+        setStableContractAmount((prevState: any) => ({
+          ...prevState,
+          [coin.label]: ''
+        }));
+      }
     })
   }
 
@@ -179,7 +186,11 @@ function MultRedemption(props: props) {
   }
 
   const getInputTokenAllowance = async(): Promise<any> => {
-    await approveDORG();
+    try {
+      await approveDORG();
+    } catch(err) {
+      console.log(err.message);
+    }
   };
 
   //Function to redeem the inputToken for single or multiple stableCoins

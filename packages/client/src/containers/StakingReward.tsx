@@ -43,6 +43,15 @@ function StakingReward(props: props) {
   //DORG token balance of the selected address (user).
   const userInputTokenBalance: number = props.inputBalance;
 
+  //Getting current allowance
+  const getInputTokenAllowance = async(): Promise<any> => {
+    try {
+      await approveSRDORG();
+    } catch(err) {
+      console.log(err.message);
+    }
+  };
+
   //State for each getter of the contract
   const [srApr, setSrApr] = useState('');
   const [rewardsAvailable, setRewardsAvailable] = useState('');
@@ -50,19 +59,23 @@ function StakingReward(props: props) {
 
   //Function that fetches all the information needed for the UI from the contract.
   const stakingContractInfo = async (): Promise<any> => {
-    const StakingRewardSigned: Contract = await getStakingRewardContractSigned();
-    const currentAddress: Address = await getProviderSelectedAddress();
+    try {
+      const StakingRewardSigned: Contract = await getStakingRewardContractSigned();
+      const currentAddress: Address = await getProviderSelectedAddress();
+      const sApr = ethers.utils.formatEther(await StakingRewardSigned.apr());
+      const formatsApr = Number(sApr) * (10**16);
+      setSrApr(String(formatsApr));
 
-    const sApr = ethers.utils.formatEther(await StakingRewardSigned.apr());
-    const formatsApr = Number(sApr) * (10**16);
-    setSrApr(String(formatsApr));
+      const sRewardsAvailable = ethers.utils.formatEther(await StakingRewardSigned.rewardsAvailable());
+      setRewardsAvailable(sRewardsAvailable);
 
-    const sRewardsAvailable = ethers.utils.formatEther(await StakingRewardSigned.rewardsAvailable());
-    setRewardsAvailable(sRewardsAvailable);
-
-    const sTokensStaked = ethers.utils.formatEther(await StakingRewardSigned.tokensStaked(currentAddress));
-    setTokensStaked(sTokensStaked);
-
+      const sTokensStaked = ethers.utils.formatEther(await StakingRewardSigned.tokensStaked(currentAddress));
+      setTokensStaked(sTokensStaked);
+    } catch(err) {
+      setSrApr('');
+      setRewardsAvailable('');
+      setTokensStaked('');
+    }
   }
 
   useEffect(() => {
@@ -75,14 +88,14 @@ function StakingReward(props: props) {
   }, []);
 
   useEffect(() => {
-    approveSRDORG();
+    getInputTokenAllowance();
   }, []);
 
   // Function to interact with the Stake method of the contract
   const stake = async (): Promise<any> => {
-    const { token } = Addresses.StakingReward.initializeParams
-    const StakingRewardSigned: Contract = await getStakingRewardContractSigned();
     try {
+      const { token } = Addresses.StakingReward.initializeParams
+      const StakingRewardSigned: Contract = await getStakingRewardContractSigned();
       await StakingRewardSigned.stake(bigNumberifyAmount(Number(userAmount), token))
         .then(() => {
           setSnackMessage('Your transaction was sent to Metamask!')
@@ -99,9 +112,9 @@ function StakingReward(props: props) {
 
   // Function to interact with the Unstake method of the contract
   const unstake = async (): Promise<any> => {
-    const { token } = Addresses.StakingReward.initializeParams
-    const StakingRewardSigned: Contract = await getStakingRewardContractSigned();
     try {
+      const { token } = Addresses.StakingReward.initializeParams
+      const StakingRewardSigned: Contract = await getStakingRewardContractSigned();
       await StakingRewardSigned.unstake(bigNumberifyAmount(Number(userAmount), token))
         .then(() => {
           setSnackMessage('Your transaction was sent to Metamask!')
@@ -118,9 +131,9 @@ function StakingReward(props: props) {
 
 // Function to interact with the unstakeAndClaim method of the contract
   const unstakeAndClaim = async (): Promise<any> => {
-    const { token } = Addresses.StakingReward.initializeParams
-    const StakingRewardSigned: Contract = await getStakingRewardContractSigned();
     try {
+      const { token } = Addresses.StakingReward.initializeParams
+      const StakingRewardSigned: Contract = await getStakingRewardContractSigned();
       await StakingRewardSigned.unstakeAndClaim(bigNumberifyAmount(Number(userAmount), token))
         .then(() => {
           setSnackMessage('Your transaction was sent to Metamask!')
@@ -137,8 +150,8 @@ function StakingReward(props: props) {
 
   // Function to interact with the claimRewards method of the contract
   const claimRewards = async (): Promise<any> => {
-    const StakingRewardSigned: Contract = await getStakingRewardContractSigned();
     try {
+      const StakingRewardSigned: Contract = await getStakingRewardContractSigned();
       await StakingRewardSigned.claimRewards()
         .then(() => {
           setSnackMessage('Your transaction was sent to Metamask!')
@@ -155,9 +168,9 @@ function StakingReward(props: props) {
 
   // Function to interact with the claimPartialRewards method of the contract
   const claimPartialRewards = async (): Promise<any> => {
-    const { token } = Addresses.StakingReward.initializeParams
-    const StakingRewardSigned: Contract = await getStakingRewardContractSigned();
     try {
+      const { token } = Addresses.StakingReward.initializeParams
+      const StakingRewardSigned: Contract = await getStakingRewardContractSigned();
       await StakingRewardSigned.claimPartialRewards(bigNumberifyAmount(Number(userAmount), token))
         .then(() => {
           setSnackMessage('Your transaction was sent to Metamask!')
