@@ -1,39 +1,78 @@
-import StableRedemptionArtifact from "@dorgtech/dorg-token-contracts/artifacts/StableRedemption.json";
-import ERC20 from "@dorgtech/dorg-token-contracts/artifacts/ERC20.json";
+import StableRedemption from "@dorgtech/dorg-token-contracts/artifacts/StableRedemption.json";
+import StakingReward from "@dorgtech/dorg-token-contracts/artifacts/StakingReward.json";
+import ERC20 from "@dorgtech/dorg-token-contracts/artifacts/TestERC20.json";
 import Addresses from '@dorgtech/dorg-token-contracts/artifacts/Addresses.json';
-import { Web3 } from "./web3";
-
+import { Contract, Signer } from 'ethers';
+import { Web3, Address, EthereumSigner } from "./web3";
 
 const getStableRedemptionContract = async (): Promise<any> => {
   const web3 = await Web3.getInstance();
   const { address } = Addresses.StableRedemption;
-  const { abi } = StableRedemptionArtifact;
-  const instance = await web3.getContract(address, abi) as any;
+  const { abi } = StableRedemption;
+  const instance = await web3.getContract(address, abi);
   return instance;
 }
 
-const getDorgTokenBalance = async (): Promise<any> => {
-  const { inputToken } = Addresses.StableRedemption.initializeParams;
-  const tokenAddress = inputToken;
+const getStakingRewardContract = async (): Promise<any> => {
+  const web3 = await Web3.getInstance();
+  const { address } = Addresses.StakingReward;
+  const { abi } = StakingReward;
+  const instance = await web3.getContract(address, abi);
+  return instance;
+}
+
+const getStakingRewardContractSigned = async (): Promise<any> => {
+  const StakingRewardContract: Contract = await getStakingRewardContract();
+  const signer: EthereumSigner = await getSigner();
+  const StakingRewardSigned: Contract = StakingRewardContract.connect(signer as Signer);
+  return StakingRewardSigned;
+}
+
+const getTokenBalance = async (tokenAddress: Address, account?: Address): Promise<any> => {
   const { abi } = ERC20;
   const web3 = await Web3.getInstance();
-  const provider = await web3.provider;
-  const accounts = await provider.listAccounts();
+  if(!account) {
+    const accounts = await web3.getAccounts();
+    account = accounts[0];
+  }
   const instance = await web3.getContract(tokenAddress, abi) as any;
-  const balance = await instance.balanceOf(accounts[0]);
+  const balance = await instance.balanceOf(account);
   return balance;
+}
+
+const getTokenDecimals = async (tokenAddress: Address): Promise<any> => {
+  const { abi } = ERC20;
+  const web3 = await Web3.getInstance();
+  const instance = await web3.getContract(tokenAddress, abi);
+  const decimals = await instance.decimals();
+  return decimals;
 }
 
 const getSigner = async (): Promise<any> => {
   const web3 = await Web3.getInstance();
-  const signer = web3.signer;
+  const signer = web3.getSigner();
   return signer;
 }
 
 const getProvider = async (): Promise<any> => {
   const web3 = await Web3.getInstance();
-  const provider = await web3.provider;
+  const provider = web3.getWeb3();
   return provider;
 }
 
-export { getStableRedemptionContract, getSigner, getProvider, getDorgTokenBalance };
+const getProviderSelectedAddress = async (): Promise<any> => {
+  const web3 = await Web3.getInstance();
+  const accounts = await web3.getAccounts();
+  return accounts[0];
+}
+
+export {
+  getStableRedemptionContract,
+  getSigner,
+  getProvider,
+  getTokenBalance,
+  getTokenDecimals,
+  getProviderSelectedAddress,
+  getStakingRewardContract,
+  getStakingRewardContractSigned,
+};

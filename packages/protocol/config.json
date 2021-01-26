@@ -12,7 +12,7 @@
     },
     "StakingReward": {
       "owner": "0xb90E873d8F959F36Dd40afa7F4E30C10907Ae8dA",
-      "token": "?",
+      "token": "0x8E11217a3E41B352174041DB83693F90BDB43941",
       "apr": "10000"
     },
     "TestERC20": {

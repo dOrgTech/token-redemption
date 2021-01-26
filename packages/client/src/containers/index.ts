@@ -1,9 +1,15 @@
 import App from "./App"
-import Redemption from "./Redemption"
-import Header from "./Header"
+import Main from "./Main"
+import MultRedemption from "./MultRedemption"
+import Metamask from "./Metamask"
+import Home from "./Home"
+import StakingReward from "./StakingReward"
 
 export {
   App,
-  Redemption,
-  Header,
+  Main,
+  MultRedemption,
+  Metamask,
+  Home,
+  StakingReward,
 }

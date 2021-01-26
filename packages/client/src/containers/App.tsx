@@ -1,15 +1,27 @@
 import React from 'react';
 import './App.css';
-import { Redemption, Header } from './';
+import { Home, Metamask } from './';
+
+const RenderMetaMask = () => {
+  return (<div className="App">
+    <Metamask />
+  </div>)
+}
+
+const RenderApp = () => {
+  return(
+    <div className="App">
+      <Home />
+    </div>
+  )
+}
 
 function App() {
-
-  return (
-    <div className="App">
-      <Header />
-      <Redemption />
-    </div>
-  );
+  if((window as any).web3 === undefined) {
+    return <RenderMetaMask/>
+  } else {
+    return <RenderApp />
+  }
 }
 
 export default App;
