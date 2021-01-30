@@ -9,7 +9,8 @@
     "test": "npx buidler test",
     "coverage": "yarn build && npx buidler coverage --temp artifacts --network coverage",
     "deploy:rinkeby": "NETWORK=rinkeby npx buidler run --network rinkeby scripts/deploy.ts",
-    "deploy:mainnet": "NETWORK=mainnet npx buidler run --network mainnet scripts/deploy.ts"
+    "deploy:mainnet": "NETWORK=mainnet npx buidler run --network mainnet scripts/deploy.ts",
+    "deploy:xdai": "NETWORK=xdai npx buidler run --network xdai scripts/deploy.ts"
   },
   "repository": {
     "type": "git",

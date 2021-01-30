@@ -37,3 +37,8 @@ export const bigNumberifyAmount = async (amount: number, coin: Address): Promise
   return amountBn;
 
 }
+
+export function roundNumber(number: number, decimals: string): number {
+  var newnumber = Number(number+'').toFixed(parseInt(decimals));
+  return parseFloat(newnumber);
+}

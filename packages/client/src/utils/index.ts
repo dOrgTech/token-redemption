@@ -1,4 +1,4 @@
-import { bigNumberifyAmounts, bigNumberifyAmount, StableCoin } from './helpers'
+import { bigNumberifyAmounts, bigNumberifyAmount, roundNumber, StableCoin } from './helpers'
 import { approveDORG, approveSRDORG, tokenHolderAllowance } from './allowances'
 
 export {
@@ -7,6 +7,7 @@ export {
   approveDORG,
   approveSRDORG,
   tokenHolderAllowance,
+  roundNumber,
 }
 
 export type {

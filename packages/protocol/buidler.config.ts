@@ -31,6 +31,10 @@ const config: BuidlerConfig = {
       url: `https://mainnet.infura.io/v3/${INFURA_API_KEY}`,
       accounts: [PRIVATE_KEY!]
     },
+    xdai: {
+      url: 'https://xdai.poanetwork.dev',
+      accounts: [PRIVATE_KEY!]
+    },
     coverage: {
       url: 'http://127.0.0.1:8555' // Coverage launches its own ganache-cli client
     }

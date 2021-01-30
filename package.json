@@ -13,10 +13,12 @@
   "scripts": {
     "clean": "lerna run clean && rimraf ./**/node_modules",
     "build": "yarn workspace @dorgtech/dorg-token-contracts build",
+    "buildclient": "yarn workspace @dorgtech/dorg-token-ui build",
     "test": "yarn workspace @dorgtech/dorg-token-contracts test",
     "coverage": "yarn workspace @dorgtech/dorg-token-contracts coverage",
     "deploy:rinkeby": "yarn workspace @dorgtech/dorg-token-contracts deploy:rinkeby",
     "deploy:mainnet": "yarn workspace @dorgtech/dorg-token-contracts deploy:mainnet",
+    "deploy:xdai": "yarn workspace @dorgtech/dorg-token-contracts deploy:xdai",
     "client": "yarn workspace @dorgtech/dorg-token-ui start"
   },
   "devDependencies": {
