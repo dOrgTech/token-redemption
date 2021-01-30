@@ -1,0 +1,22 @@
+{
+  "StableRedemption": {
+    "address": "0x6a47dd043D6152a1e108cD84bE133fd641113c6b",
+    "tx": "0x08af5e44a2b6cfd90089d8aa9b7cd3a7341d588459ba82da42aa4e2ab7423df4",
+    "initializeParams": {
+      "owner": "0x00F51D0eEd160D53F9D90e70b35A43EbfB618c5b",
+      "inputToken": "0x76D37cbB1fD75912bfB0cE885c506C77955F5C05",
+      "redemptionTokens": [
+        "0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d"
+      ]
+    }
+  },
+  "StakingReward": {
+    "address": "0xc5462b12CB9D785CB780c7c18cA04c65329E2B5B",
+    "tx": "0x01bf7fce844639e3a356a6a09ce999c30a683bed9d94b38f53a8b17d94c59068",
+    "initializeParams": {
+      "owner": "0x00F51D0eEd160D53F9D90e70b35A43EbfB618c5b",
+      "token": "0x76D37cbB1fD75912bfB0cE885c506C77955F5C05",
+      "apr": "250"
+    }
+  }
+}

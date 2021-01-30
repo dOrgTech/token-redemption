@@ -9,6 +9,10 @@ export async function deployAndVerify(
   log: (address: string, tx: string) => void
 ) {
   const factory = await ethers.getContract(name);
+  const provider = ethers.getDefaultProvider();
+  const tx = factory.getDeployTransaction();
+  const estimateGas = await provider.estimateGas(tx);
+  console.log('estimated gas cost:', estimateGas.toString());
   const contract = await factory.deploy();
   log(contract.address, contract.deployTransaction.hash!);
   await contract.deployed();

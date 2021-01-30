@@ -1,7 +1,7 @@
 {
   "rinkeby": {
     "StableRedemption": {
-      "owner": "0xb90E873d8F959F36Dd40afa7F4E30C10907Ae8dA",
+      "owner": "0x00F51D0eEd160D53F9D90e70b35A43EbfB618c5b",
       "inputToken": "0x8E11217a3E41B352174041DB83693F90BDB43941",
       "redemptionTokens": [
         "0xec11d004548C393de05Cc91eCA3eC411F0DE0dFb",
@@ -28,6 +28,27 @@
       "name": "dOrgTest",
       "symbol": "DORGT",
       "decimals": 18
+    },
+    "StableRedemption": {
+      "owner": "0xB1B7586656116D546033e3bAFF69BFcD6592225E",
+      "inputToken": "0xf3cf5bddbf4cb8dccdce776bbb217432c617a314",
+      "redemptionTokens": [
+        "0x3b2d0c1b652d5fad3a43f4ada7265371eac050d4"
+      ]
+    }
+  },
+  "xdai": {
+    "StableRedemption": {
+      "owner": "0x00F51D0eEd160D53F9D90e70b35A43EbfB618c5b",
+      "inputToken": "0x76D37cbB1fD75912bfB0cE885c506C77955F5C05",
+      "redemptionTokens": [
+        "0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d"
+      ]
+    },
+    "StakingReward": {
+      "owner": "0x00F51D0eEd160D53F9D90e70b35A43EbfB618c5b",
+      "token": "0x76D37cbB1fD75912bfB0cE885c506C77955F5C05",
+      "apr": "250"
     }
   }
 }

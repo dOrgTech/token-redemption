@@ -7,7 +7,7 @@ import { getStableRedemptionContract, getSigner, getTokenBalance, getTokenDecima
 import { Typography, Button, TextField, Dialog, DialogActions, DialogContent,
          DialogContentText, DialogTitle, Container, makeStyles, Box, Snackbar } from '@material-ui/core/';
 import MuiAlert from '@material-ui/lab/Alert';
-import { daiLogo, usdcLogo, tusdLogo, usdtLogo, defaultLogo, infoIcon } from '../assets';
+import { defaultLogo, infoIcon } from '../assets';
 
 
 type props = {
@@ -41,32 +41,11 @@ const { redemptionTokens } = Addresses.StableRedemption.initializeParams;
 let stableCoins: StableCoin[] = [
   {
     address: redemptionTokens[0],
-    label: 'USDC',
-    logo: usdcLogo,
+    label: 'WXDAI',
+    logo: defaultLogo,
     contractBalance: 0,
     _amount: 0,
-  },
-  {
-    address: redemptionTokens[1],
-    label: 'USDT',
-    logo: usdtLogo,
-    contractBalance: 0,
-    _amount: 0,
-  },
-  {
-    address: redemptionTokens[2],
-    label: 'DAI',
-    logo: daiLogo,
-    contractBalance: 0,
-    _amount: 0,
-  },
-  {
-    address: redemptionTokens[3],
-    label: 'TUSD',
-    logo: tusdLogo,
-    contractBalance: 0,
-    _amount: 0,
-  },
+  }
 ];
 
 function MultRedemption(props: props) {
@@ -285,7 +264,7 @@ function MultRedemption(props: props) {
         const message = ` ${coin.label}: ${coin._amount}`;
         return message;
       })
-      return `${scTotal} DORG to  ` + confMessage;
+      return `${scTotal} DXRG to  ` + confMessage;
     });
 
     setStableTotalMessage(() => {

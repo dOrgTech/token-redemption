@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ethers, Contract } from 'ethers';
 import { Address } from '../services/web3';
-import { bigNumberifyAmount, approveSRDORG } from '../utils'
+import { bigNumberifyAmount, approveSRDORG, roundNumber } from '../utils'
 import Addresses from '@dorgtech/dorg-token-contracts/artifacts/Addresses.json';
 import { getStakingRewardContractSigned, getProviderSelectedAddress } from '../services';
 import { Typography, Button, TextField, Dialog, DialogActions, DialogContent,
@@ -56,6 +56,7 @@ function StakingReward(props: props) {
   const [srApr, setSrApr] = useState('');
   const [rewardsAvailable, setRewardsAvailable] = useState('');
   const [tokensStaked, setTokensStaked] = useState('');
+  const [calculateStakeRewards, setCalculateStakeRewards] = useState('');
 
   //Function that fetches all the information needed for the UI from the contract.
   const stakingContractInfo = async (): Promise<any> => {
@@ -71,10 +72,14 @@ function StakingReward(props: props) {
 
       const sTokensStaked = ethers.utils.formatEther(await StakingRewardSigned.tokensStaked(currentAddress));
       setTokensStaked(sTokensStaked);
+
+      const cStakeRewards = ethers.utils.formatEther(await StakingRewardSigned.calculateStakeRewards(currentAddress));
+      setCalculateStakeRewards(cStakeRewards);
     } catch(err) {
       setSrApr('');
       setRewardsAvailable('');
       setTokensStaked('');
+      setCalculateStakeRewards('');
     }
   }
 
@@ -186,9 +191,10 @@ function StakingReward(props: props) {
   }
 
   //Array of arrays with each card information.
-  const stateArray = [[srApr, 'APR (%)', 'Annual percentage rate.'],
-                      [rewardsAvailable, 'Rewards Available', 'Amount of DORG tokens you have earned.'],
-                      [tokensStaked, 'DORG Tokens Staked', 'Amount of DORG tokens you have staking.']];
+  const totalTokensStaked:number = roundNumber(Number(tokensStaked) + Number(calculateStakeRewards), '18');
+  const stateArray: any[] = [[srApr, 'APR (%)', 'Annual percentage rate.'],
+                      [rewardsAvailable, 'Rewards Available', 'Amount of DXRG tokens you have earned.'],
+                      [totalTokensStaked, 'DXRG Tokens Staked', 'Amount of DXRG tokens you have staking.']];
 
   //Function to render a single card, it returns JSX with the parameters for each card.
   const renderCard = (state: any) => {
@@ -267,19 +273,19 @@ function StakingReward(props: props) {
   const handleClickOpen = (event: string) => {
     if(event === 'stake') {
       setDialogTitle('stake')
-      setDialogMessage(`${userAmount} DORG`);
+      setDialogMessage(`${userAmount} DXRG`);
     } else if(event === 'unstake') {
       setDialogTitle('unstake')
-      setDialogMessage(`${userAmount} DORG`);
+      setDialogMessage(`${userAmount} DXRG`);
     } else if(event === 'unstake and claim') {
       setDialogTitle('unstake and claim')
-      setDialogMessage(`Unstake ${userAmount} DORG and claim ${rewardsAvailable} DORG from rewards`);
+      setDialogMessage(`Unstake ${userAmount} DXRG and claim ${rewardsAvailable} DXRG from rewards`);
     } else if(event === 'claim rewards') {
       setDialogTitle('claim rewards')
-      setDialogMessage(`${rewardsAvailable} DORG from rewards`);
+      setDialogMessage(`${rewardsAvailable} DXRG from rewards`);
     } else if(event === 'claim partial rewards') {
       setDialogTitle('claim partial rewards')
-      setDialogMessage(`${userAmount} DORG from rewards`);
+      setDialogMessage(`${userAmount} DXRG from rewards`);
     }
     setOpenConf(true);
   };

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getTokenBalance, getProviderSelectedAddress } from '../services';
 import Addresses from '@dorgtech/dorg-token-contracts/artifacts/Addresses.json';
 import { ethers } from 'ethers';
-import { makeStyles, Typography, Container, Box, Button } from '@material-ui/core/';
+import { makeStyles, Typography, Container, Box } from '@material-ui/core/';
 import { MultRedemption, StakingReward } from './'
 
 const useStyles = makeStyles((theme) => ({
@@ -39,28 +39,11 @@ function Main() {
   // This function checks the balance of the current
   // provider account and updates the "inputBalance" state.
   const checkBalance = async (): Promise<any> => {
-    try {
-      const { inputToken } = Addresses.StableRedemption.initializeParams;
-      const balance: number = await getTokenBalance(inputToken);
-      const balanceRounded: string = (Math.round(Number(ethers.utils.formatEther(balance)) * 100) / 100).toFixed(2);
+    const { inputToken } = Addresses.StableRedemption.initializeParams;
+    const balance: number = await getTokenBalance(inputToken);
+    const balanceRounded: string = (Math.round(Number(ethers.utils.formatEther(balance)) * 100) / 100).toFixed(2);
 
-      setInputBalance(balanceRounded);
-    } catch(err) {
-      console.log(err.message)
-      setInputBalance('')
-    }
-  }
-
-  const [flag, setFlag] = useState(false);
-  const [disabled, setDisabled] = useState(true);
-
-  const handleRedeem = () => {
-    setFlag(false);
-    setDisabled(true);
-  }
-  const handleStake = () => {
-    setFlag(true);
-    setDisabled(false);
+    setInputBalance(balanceRounded);
   }
 
   const classes = useStyles();
@@ -69,20 +52,19 @@ function Main() {
   return (
     <Container className={classes.root}>
       <Box display="flex" justifyContent="center" m={1} p={1}>
-        <Typography variant="h5">dOrg Token Dashboard</Typography>
-      </Box>
-      <Box display="flex" justifyContent="center" m={1} p={1}>
-        <Button variant="contained" color="primary" onClick={handleRedeem} disabled={disabled} title='Redeem Tokens'>Redeem Tokens</Button>
-        <Button variant="contained" color="secondary" onClick={handleStake} disabled={flag} title='Stake Tokens'>Stake Tokens</Button>
+        <Typography variant="h5">dOrg Token Redemption</Typography>
       </Box>
       <Box display="flex" justifyContent="center" m={1} p={1}>
         <Typography variant="body2">{userAddress}</Typography>
       </Box>
       <Box display="flex" justifyContent="center" m={1} p={1}>
-        <Typography variant="body2">Your balance: {inputBalance} DXRG</Typography>
+        <Typography variant="body2">Your balance: {inputBalance} DORG</Typography>
       </Box>
-      {flag === false ? <MultRedemption inputBalance={Number(inputBalance)} />
-        : <StakingReward inputBalance={Number(inputBalance)} />}
+      <MultRedemption inputBalance={Number(inputBalance)} />
+      <br></br>
+      <hr></hr>
+      <br></br>
+      <StakingReward inputBalance={Number(inputBalance)} />
     </Container>
   );
 }
