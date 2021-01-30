@@ -17,7 +17,7 @@ const RenderApp = () => {
 }
 
 function App() {
-  if((window as any).web3 === undefined) {
+  if((window as any).ethereum === undefined) {
     return <RenderMetaMask/>
   } else {
     return <RenderApp />
