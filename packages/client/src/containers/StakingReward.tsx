@@ -297,7 +297,7 @@ function StakingReward(props: props) {
   //errorCheck vars for input/buttons
   const errorCheck = () => {
     if(Number(userAmount) > userInputTokenBalance) {
-      if(Number(userAmount) < Number(tokensStaked)) {
+      if(Number(userAmount) <= Number(tokensStaked)) {
         return false;
       } else {
         return true;
