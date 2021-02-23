@@ -308,7 +308,7 @@ function StakingReward(props: props) {
 
   const errorButtons = Number(userAmount) > userInputTokenBalance || userAmount === '' || userAmount === '0';
   const errorUnstake = Number(userAmount) > Number(tokensStaked) || userAmount === '' || userAmount === '0' || Number(tokensStaked) === 0 || Number(userAmount) > Number(tokensStaked);
-  const errorUnstakeAndClaim = Number(rewardsAvailable) === 0 || Number(tokensStaked) === 0 || Number(userAmount) > Number(tokensStaked) || userAmount === '' || userAmount === '0' || Number(userAmount) > Number(contractBalance);
+  const errorUnstakeAndClaim = Number(rewardsAvailable) === 0 || Number(tokensStaked) === 0 || Number(userAmount) > Number(tokensStaked) || userAmount === '' || userAmount === '0' || Number(rewardsAvailable) > Number(contractBalance);
   const errorPartialRewards = Number(rewardsAvailable) === 0 || userAmount === '' || userAmount === '0' || Number(userAmount) > Number(rewardsAvailable) || Number(userAmount) > Number(rewardsAvailable) || Number(userAmount) > Number(contractBalance); 
   const errorClaimRewards = Number(rewardsAvailable) === 0;
 

@@ -86,8 +86,6 @@ export const approveSRDORG = async (): Promise<any> => {
   const dorgContractSigned: Contract = dorgContract.connect(signer);
 
   let currentAllowance: Allowance = await tokenHolderAllowance();
-  console.log('amount', Number(amount));
-  console.log('currentAllowance', currentAllowance);
   let approve: boolean = false;
   if (currentAllowance.dorgStaking < MAX_ALLOWANCE) {
     try {
@@ -99,7 +97,6 @@ export const approveSRDORG = async (): Promise<any> => {
     approve = true;
   }
   currentAllowance = await tokenHolderAllowance();
-  console.log('current allowance before return: ', currentAllowance)
   return {
     currentETHAddress,
     approve,
