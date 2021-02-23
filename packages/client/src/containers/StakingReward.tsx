@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ethers, Contract } from 'ethers';
 import { Address } from '../services/web3';
-import { bigNumberifyAmount, approveSRDORG, roundNumber } from '../utils'
+import { bigNumberifyAmount, approveSRDORG } from '../utils'
 import Addresses from '@dorgtech/dorg-token-contracts/artifacts/Addresses.json';
 import { getStakingRewardContractSigned, getProviderSelectedAddress } from '../services';
 import { Typography, Button, TextField, Dialog, DialogActions, DialogContent,
@@ -56,7 +56,7 @@ function StakingReward(props: props) {
   const [srApr, setSrApr] = useState('');
   const [rewardsAvailable, setRewardsAvailable] = useState('');
   const [tokensStaked, setTokensStaked] = useState('');
-  const [calculateStakeRewards, setCalculateStakeRewards] = useState('');
+  const [contractBalance, setContractBalance] = useState('');
 
   //Function that fetches all the information needed for the UI from the contract.
   const stakingContractInfo = async (): Promise<any> => {
@@ -67,19 +67,20 @@ function StakingReward(props: props) {
       const formatsApr = Number(sApr) * (10**16);
       setSrApr(String(formatsApr));
 
-      const sRewardsAvailable = ethers.utils.formatEther(await StakingRewardSigned.rewardsAvailable());
+      const sRewardsAvailable = ethers.utils.formatEther(await StakingRewardSigned.calculateRewards(currentAddress));
       setRewardsAvailable(sRewardsAvailable);
 
       const sTokensStaked = ethers.utils.formatEther(await StakingRewardSigned.tokensStaked(currentAddress));
       setTokensStaked(sTokensStaked);
 
-      const cStakeRewards = ethers.utils.formatEther(await StakingRewardSigned.calculateStakeRewards(currentAddress));
-      setCalculateStakeRewards(cStakeRewards);
+      const sContractBalance = ethers.utils.formatEther(await StakingRewardSigned.rewardsAvailable());
+      setContractBalance(sContractBalance);
+
     } catch(err) {
       setSrApr('');
       setRewardsAvailable('');
       setTokensStaked('');
-      setCalculateStakeRewards('');
+      setContractBalance('');
     }
   }
 
@@ -191,10 +192,10 @@ function StakingReward(props: props) {
   }
 
   //Array of arrays with each card information.
-  const totalTokensStaked:number = roundNumber(Number(tokensStaked) + Number(calculateStakeRewards), '18');
   const stateArray: any[] = [[srApr, 'APR (%)', 'Annual percentage rate.'],
-                      [rewardsAvailable, 'Rewards Available', 'Amount of DXRG tokens you have earned.'],
-                      [totalTokensStaked, 'DXRG Tokens Staked', 'Amount of DXRG tokens you have staking.']];
+                      [rewardsAvailable, 'Your Rewards', 'DXRG tokens you have earned.'],
+                      [tokensStaked, 'DXRG Tokens Staked', 'DXRG tokens you have staking.'],
+                      [contractBalance, 'Contract Balance', 'DXRG tokens available in contract.']];
 
   //Function to render a single card, it returns JSX with the parameters for each card.
   const renderCard = (state: any) => {
@@ -307,8 +308,8 @@ function StakingReward(props: props) {
 
   const errorButtons = Number(userAmount) > userInputTokenBalance || userAmount === '' || userAmount === '0';
   const errorUnstake = Number(userAmount) > Number(tokensStaked) || userAmount === '' || userAmount === '0' || Number(tokensStaked) === 0 || Number(userAmount) > Number(tokensStaked);
-  const errorUnstakeAndClaim = Number(rewardsAvailable) === 0 || Number(tokensStaked) === 0 || Number(userAmount) > Number(tokensStaked) || userAmount === '' || userAmount === '0';
-  const errorPartialRewards = Number(rewardsAvailable) === 0 || userAmount === '' || userAmount === '0' || Number(userAmount) > userInputTokenBalance || Number(userAmount) > Number(rewardsAvailable);
+  const errorUnstakeAndClaim = Number(rewardsAvailable) === 0 || Number(tokensStaked) === 0 || Number(userAmount) > Number(tokensStaked) || userAmount === '' || userAmount === '0' || Number(userAmount) > Number(contractBalance);
+  const errorPartialRewards = Number(rewardsAvailable) === 0 || userAmount === '' || userAmount === '0' || Number(userAmount) > Number(rewardsAvailable) || Number(userAmount) > Number(rewardsAvailable) || Number(userAmount) > Number(contractBalance); 
   const errorClaimRewards = Number(rewardsAvailable) === 0;
 
   return (
